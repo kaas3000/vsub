@@ -11,8 +11,19 @@
                 v-model="visibleSong"
                 color="primary"
               >
-                <v-list-item v-for="(song, i) in songs" :key="i" :value="song"
-                  >{{ song }}
+                <v-list-item v-for="(song, i) in songs" :key="i" :value="song">
+                  <v-list-item-content>
+                    {{ song }}
+                  </v-list-item-content>
+
+                  <v-list-item-action v-if="isEditingSongList">
+                    <v-btn icon>
+                      <v-icon color="grey lighten-1">mdi-pencil</v-icon>
+                    </v-btn>
+                    <v-btn icon @click="$store.dispatch('removeSong', song)">
+                      <v-icon color="grey lighten-1">mdi-delete</v-icon>
+                    </v-btn>
+                  </v-list-item-action>
                 </v-list-item>
               </v-list-item-group>
             </v-list>
@@ -21,7 +32,12 @@
 
         <v-row>
           <v-col>
-            <v-btn tile block id="add" @click="isAddingSong = !isAddingSong"
+            <v-btn tile text @click="isEditingSongList = !isEditingSongList"
+              >Bewerkmodus</v-btn
+            >
+          </v-col>
+          <v-col>
+            <v-btn tile block @click="isAddingSong = !isAddingSong"
               >+ Nieuw lied</v-btn
             >
           </v-col>
@@ -51,36 +67,48 @@
       <v-row>
         <v-container>
           <v-row dense>
-            <v-col
-              v-for="(regels, i) in songData ? songData.regels : []"
-              :key="i"
-              cols="12"
-            >
-              <v-card
-                flat
-                :class="
-                  regels.active ? 'font-weight-bold primary--text active' : null
-                "
-                @click="setSubtitles(regels.boven, regels.onder)"
-              >
-                <div>
-                  <v-card-text class="py-0">
-                    <span
-                      v-if="regels.boven === ''"
-                      class="font-italic grey--text grey-darken-4--text"
-                      >lege regel</span
+            <v-col>
+              <v-row>
+                <v-list dense class="col-12">
+                  <template v-for="(subtitles, i) in subtitles">
+                    <v-divider
+                      v-if="subtitles === null"
+                      :key="`${songData.title}-${i}`"
+                    ></v-divider>
+
+                    <v-list-item
+                      v-else
+                      :key="`${songData.title}-${i}`"
+                      active-class="active"
+                      :class="
+                        `${songData.title}-${i}` === selectedSubtitle
+                          ? 'active-subtitle'
+                          : ''
+                      "
+                      @click="
+                        setSubtitles(subtitles.boven, subtitles.onder);
+                        selectedSubtitle = `${songData.title}-${i}`;
+                      "
                     >
-                    {{ regels.boven }}
-                    <br />
-                    <span
-                      v-if="regels.onder === ''"
-                      class="font-italic grey--text grey-darken-4--text"
-                      >lege regel</span
-                    >
-                    {{ regels.onder }}
-                  </v-card-text>
-                </div>
-              </v-card>
+                      <v-list-item-content>
+                        <span
+                          v-if="subtitles.boven === ''"
+                          class="font-italic grey--text grey-darken-4--text"
+                          >lege regel</span
+                        >
+                        {{ subtitles.boven }}
+                        <br />
+                        <span
+                          v-if="subtitles.onder === ''"
+                          class="font-italic grey--text grey-darken-4--text"
+                          >lege regel</span
+                        >
+                        {{ subtitles.onder }}
+                      </v-list-item-content>
+                    </v-list-item>
+                  </template>
+                </v-list>
+              </v-row>
             </v-col>
           </v-row>
         </v-container>
@@ -91,13 +119,15 @@
 
 <script>
 export default {
-  data() {
-    return {
-      isAddingSong: false,
-      newSongTitle: "",
-      newSongLines: "",
-    };
-  },
+  data: () => ({
+    newSongTitle: "",
+    newSongLines: "",
+
+    // ui state
+    isEditingSongList: false,
+    isAddingSong: false,
+    selectedSubtitle: null,
+  }),
   computed: {
     songs() {
       return this.$store.getters.songTitles;
@@ -113,6 +143,15 @@ export default {
       set(title) {
         return this.$store.dispatch("setVisibleSong", title);
       },
+    },
+
+    subtitles() {
+      if (this.songData) {
+        return this.songData.verses.reduce((acc, verse) => {
+          return [...acc, null, ...verse.regels];
+        }, []);
+      }
+      return [];
     },
   },
   methods: {
@@ -169,4 +208,19 @@ export default {
 };
 </script>
 
-<style></style>
+<style lang="scss" scoped>
+.active-subtitle {
+  &::before {
+    background-color: currentColor;
+    bottom: 0;
+    content: "";
+    left: 0;
+    opacity: 0.1;
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+    transition: 0.3s cubic-bezier(0.25, 0.8, 0.5, 1);
+  }
+}
+</style>

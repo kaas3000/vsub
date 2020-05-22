@@ -20,17 +20,72 @@ const state = {
   songs: {
     "Psalm 1": {
       title: "Psalm 1",
-      regels: [
-        { ...emptySubTitle },
+      verses: [
         {
-          active: false,
-          boven: "Regel boven",
-          onder: "regel onderaan",
+          regels: [
+            {
+              boven: "Regel boven",
+              onder: "regel onderaan",
+            },
+            {
+              boven: "Regel 2 boven",
+              onder: "Regel 2",
+            },
+          ],
         },
         {
-          active: false,
-          boven: "Regel 2 boven",
-          onder: "Regel 2",
+          regels: [
+            {
+              boven: "Vers twee",
+              onder: "regel onderaan",
+            },
+            {
+              boven: "Regel 2 boven",
+              onder: "Regel 2",
+            },
+          ],
+        },
+      ],
+    },
+
+    "Opwekking 2": {
+      title: "Opwekking 2",
+      verses: [
+        {
+          regels: [
+            {
+              boven: "Regel boven",
+              onder: "regel onderaan",
+            },
+            {
+              boven: "Regel 2 boven",
+              onder: "Regel 2",
+            },
+          ],
+        },
+        {
+          regels: [
+            {
+              boven: "Vers twee",
+              onder: "regel onderaan",
+            },
+            {
+              boven: "Regel 2 boven",
+              onder: "Regel 2",
+            },
+          ],
+        },
+        {
+          regels: [
+            {
+              boven: "Vers twee",
+              onder: "regel onderaan",
+            },
+            {
+              boven: "Regel 2 boven",
+              onder: "Regel 2",
+            },
+          ],
         },
       ],
     },
@@ -63,7 +118,7 @@ const mutations = {
   },
 
   REMOVE_SONG(state, title) {
-    delete state.songs[title];
+    Vue.delete(state.songs, title);
   },
 
   CLEAR_ALL_SONGS(state) {
@@ -96,6 +151,10 @@ const actions = {
 
   clearSongs(store) {
     store.commit("CLEAR_ALL_SONGS");
+  },
+
+  removeSong(store, title) {
+    store.commit("REMOVE_SONG", title);
   },
 
   setVisibleSong({ commit }, title) {
