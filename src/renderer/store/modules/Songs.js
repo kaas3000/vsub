@@ -1,4 +1,5 @@
 import Vue from "vue";
+
 const emptySubTitle = { active: false, boven: "", onder: "" };
 function isEmptySubtitle(subTitle) {
   if ("active" in subTitle && "boven" in subTitle && "onder" in subTitle) {

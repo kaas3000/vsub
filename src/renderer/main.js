@@ -1,5 +1,7 @@
 import Vue from "vue";
 import axios from "axios";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { ipcRenderer } from "electron";
 
 import Vuetify from "vuetify";
 import "@mdi/font/css/materialdesignicons.min.css";
@@ -11,9 +13,6 @@ import store from "./store";
 import vMixConnectionPlugin, {
   VMixConnectionPluginStore,
 } from "./plugins/vmix-connection";
-
-// eslint-disable-next-line import/no-extraneous-dependencies
-const { ipcRenderer } = require("electron");
 
 Vue.use(Vuetify);
 Vue.use(vMixConnectionPlugin, new VMixConnectionPluginStore());
