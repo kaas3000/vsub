@@ -18,7 +18,9 @@
 
                   <v-list-item-action v-if="isEditingSongList">
                     <v-btn icon>
-                      <v-icon color="grey lighten-1">mdi-pencil</v-icon>
+                      <v-icon color="grey lighten-1" @click="editSong(song)"
+                        >mdi-pencil</v-icon
+                      >
                     </v-btn>
                     <v-btn icon @click="$store.dispatch('removeSong', song)">
                       <v-icon color="grey lighten-1">mdi-delete</v-icon>
@@ -37,27 +39,36 @@
             >
           </v-col>
           <v-col>
-            <v-btn tile block @click="isAddingSong = !isAddingSong"
-              >+ Nieuw lied</v-btn
+            <v-dialog
+              v-model="isAddingSong"
+              content-class="addSong"
+              @input="handleEditSongPopup"
             >
-          </v-col>
-        </v-row>
-        <v-row v-if="isAddingSong">
-          <v-col>
-            <v-text-field v-model="newSongTitle" label="Titel"></v-text-field>
-            <v-textarea
-              outlined
-              label="Tekstregels"
-              v-model="newSongLines"
-            ></v-textarea>
-            <v-btn
-              id="Opslaan"
-              @click="
-                saveSong();
-                isAddingSong = !isAddingSong;
-              "
-              >Opslaan</v-btn
-            >
+              <template v-slot:activator="{ on }">
+                <v-btn tile block v-on="on">+ Nieuw Lied</v-btn>
+              </template>
+
+              <v-card class="d-flex flex-column h-100">
+                <v-card-title>Ondertitels bewerken</v-card-title>
+                <v-container fluid class="h-100 d-flex flex-column">
+                  <v-text-field
+                    style="flex: 0 0 auto;"
+                    v-model="newSongTitle"
+                    label="Titel"
+                  ></v-text-field>
+                  <v-textarea
+                    outlined
+                    style="flex: 1 1 auto; overflow: auto; padding-top: 1em;"
+                    auto-grow
+                    label="Tekstregels"
+                    v-model="newSongLines"
+                  ></v-textarea>
+                  <v-btn style="flex: 0 0 auto;" id="Opslaan" @click="saveSong"
+                    >Opslaan</v-btn
+                  >
+                </v-container>
+              </v-card>
+            </v-dialog>
           </v-col>
         </v-row>
       </v-container>
@@ -70,6 +81,24 @@
             <v-col>
               <v-row>
                 <v-list dense class="col-12">
+                  <v-list-item
+                    :class="
+                      selectedSubtitle === 'empty' ? 'active-subtitle' : ''
+                    "
+                    @click="
+                      setSubtitles('', '');
+                      selectedSubtitle = 'empty';
+                    "
+                    ><v-list-item-content>
+                      <span class="font-italic grey--text grey-darken-4--text"
+                        >lege regel</span
+                      ><br />
+                      <span class="font-italic grey--text grey-darken-4--text"
+                        >lege regel</span
+                      >
+                    </v-list-item-content>
+                  </v-list-item>
+
                   <template v-for="(subtitles, i) in subtitles">
                     <v-divider
                       v-if="subtitles === null"
@@ -120,6 +149,7 @@
 <script>
 export default {
   data: () => ({
+    oldSongTitle: "",
     newSongTitle: "",
     newSongLines: "",
 
@@ -156,30 +186,30 @@ export default {
   },
   methods: {
     saveSong() {
-      const parsedSongLines = this.newSongLines
-        .split("\n\n")
-        .map((lines) => lines.split("\n"))
-        .map((lines) => {
-          if (lines.length === 1) {
-            return { boven: "", onder: lines[0] };
-          }
-          if (lines.length > 1) {
-            return { boven: lines[0], onder: lines[1] };
-          }
-          return { boven: "", onder: "" };
-        })
-        .filter((val) => val !== null);
+      const parsedSongLines = this.parseSongText(this.newSongLines);
 
-      this.$store.dispatch("addSong", {
-        title: this.newSongTitle,
-        regels: parsedSongLines,
-      });
+      // When an old songtitle is set, the existing song has to be updated
+      if (this.oldSongTitle !== "") {
+        this.store.dispatch("updateSong", {
+          oldTitle: this.oldSongTitle,
+          title: this.newSongTitle,
+          verses: parsedSongLines,
+        });
+
+        // The old song title has been used, reset it
+        this.oldSongTitle = "";
+      } else {
+        this.$store.dispatch("addSong", {
+          title: this.newSongTitle,
+          verses: parsedSongLines,
+        });
+      }
+
+      this.newSongTitle = "";
+      this.newSongLines = "";
+      this.isAddingSong = false;
     },
 
-    /**
-     * @param {string} above
-     * @param {string} below
-     */
     setSubtitles(above, below) {
       this.execVmixCommands([
         {
@@ -204,6 +234,57 @@ export default {
         },
       ]);
     },
+
+    handleEditSongPopup(isOpen) {
+      if (isOpen === false) {
+        this.oldSongTitle = "";
+        this.newSongTitle = "";
+        this.newSongLines = "";
+      }
+    },
+
+    editSong(title) {
+      this.isAddingSong = true;
+      this.oldSongTitle = "";
+      this.newSongTitle = title;
+
+      const songData = this.$store.state.Songs.songs[title];
+      this.newSongLines = this.createSongText(songData);
+    },
+
+    createSongText(songData) {
+      return songData.verses
+        .map((verse) => {
+          return verse.regels
+            .map(({ boven, onder }) => `${boven}\n${onder}`)
+            .join("\n\n");
+        })
+        .join("\n\n\n");
+    },
+    parseSongText(songText) {
+      const parseSubtitle = (subtitle) => {
+        // A single newline seperates two textlines in one subtitle
+        const lines = subtitle.split("\n");
+
+        // Parse the subtitle line and normalize the output
+        if (lines.length === 1) {
+          return { boven: "", onder: lines[0] };
+        }
+        if (lines.length > 1) {
+          return { boven: lines[0], onder: lines[1] };
+        }
+        return { boven: "", onder: "" };
+      };
+      const parseVerse = (verse) => ({
+        regels: verse
+          // A double newline seperates different subtitles
+          .split("\n\n")
+          .map(parseSubtitle),
+      });
+
+      // A triple newline seperates the verses
+      return songText.split("\n\n\n").map((verse) => parseVerse(verse));
+    },
   },
 };
 </script>
@@ -221,6 +302,16 @@ export default {
     right: 0;
     top: 0;
     transition: 0.3s cubic-bezier(0.25, 0.8, 0.5, 1);
+  }
+}
+</style>
+
+<style lang="scss">
+.addSong {
+  height: 100%;
+
+  .h-100 {
+    height: 100%;
   }
 }
 </style>
