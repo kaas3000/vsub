@@ -35,7 +35,6 @@
 </template>
 
 <script>
-// eslint-disable-next-line import/no-extraneous-dependencies
 const ip = require("ip");
 
 export default {

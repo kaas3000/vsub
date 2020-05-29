@@ -1,6 +1,5 @@
 import Vue from "vue";
 import axios from "axios";
-// eslint-disable-next-line import/no-extraneous-dependencies
 import { ipcRenderer } from "electron";
 
 import Vuetify from "vuetify";
