@@ -1,17 +1,5 @@
 import Vue from "vue";
 
-const emptySubTitle = { active: false, boven: "", onder: "" };
-function isEmptySubtitle(subTitle) {
-  if ("active" in subTitle && "boven" in subTitle && "onder" in subTitle) {
-    return (
-      subTitle.active === emptySubTitle.active &&
-      subTitle.boven === emptySubTitle.boven &&
-      subTitle.onder === emptySubTitle.onder
-    );
-  }
-  return false;
-}
-
 const state = {
   vmixAddress: null,
   active: null,
@@ -106,14 +94,21 @@ const mutations = {
     }
   },
 
-  ADD_SONG(state, { title, regels = [] }) {
-    if (!isEmptySubtitle(regels[0] || {})) {
-      regels = [{ ...emptySubTitle }, ...regels];
+  ADD_SONG(state, { title, verses = [] }) {
+    Vue.set(state.songs, title, {
+      title,
+      verses,
+    });
+  },
+
+  UPDATE_SONG(state, { oldTitle, title, verses }) {
+    if (state.songs[oldTitle] && oldTitle !== title) {
+      Vue.delete(state.songs, oldTitle);
     }
 
     Vue.set(state.songs, title, {
       title,
-      regels,
+      verses,
     });
   },
 
@@ -147,6 +142,10 @@ const actions = {
   addSong(store, args) {
     // do something async
     store.commit("ADD_SONG", args);
+  },
+
+  updateSong(store, args) {
+    store.commit("UPDATE_SONG", args);
   },
 
   clearSongs(store) {
