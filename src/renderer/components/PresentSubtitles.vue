@@ -1,6 +1,6 @@
 <template>
   <v-row align="start" justify="center" style="height: 100%;">
-    <v-col class="col-4">
+    <v-col class="col-4 mh-100 overflow-auto">
       <v-container class="fill-height" fluid>
         <span v-shortkey="['arrowup']" @shortkey="previousSubtitle()"></span>
         <span v-shortkey="['arrowdown']" @shortkey="nextSubtitle()"></span>
@@ -385,9 +385,5 @@ export default {
 <style lang="scss">
 .addSong {
   height: 100%;
-
-  .h-100 {
-    height: 100%;
-  }
 }
 </style>
