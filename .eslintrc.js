@@ -18,6 +18,12 @@ module.exports = {
     "import/no-unresolved": 0,
     "no-param-reassign": 0,
     "no-shadow": 0,
+    "no-underscore-dangle": [
+      "error",
+      {
+        allow: ["__static"],
+      },
+    ],
     "import/extensions": 0,
     "import/newline-after-import": 0,
     "import/no-extraneous-dependencies": 0,
