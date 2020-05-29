@@ -2,7 +2,14 @@
   <v-app id="inspire">
     <v-app-bar app :color="accentColor" dark>
       <v-toolbar-title>GKV Lied Ondertiteling</v-toolbar-title>
+
       <v-spacer></v-spacer>
+
+      <v-btn icon @click="save"><v-icon>mdi-content-save</v-icon></v-btn>
+      <v-btn icon @click="open"><v-icon>mdi-folder-open</v-icon></v-btn>
+      <v-btn icon to="/settings"><v-icon>mdi-cog</v-icon></v-btn>
+      <div class="mx-4"></div>
+
       <v-btn
         icon
         @click="isLive ? disableLive() : enableLive()"
@@ -14,7 +21,6 @@
       >
         <v-icon>{{ isLive ? "mdi-stop" : "mdi-play" }}</v-icon>
       </v-btn>
-      <v-btn icon to="/settings"><v-icon>mdi-cog</v-icon></v-btn>
     </v-app-bar>
 
     <v-content>
@@ -101,6 +107,30 @@ export default {
 
       // With a new id, the tally state has to be updated too
       this.execVmixCommands("TALLY");
+    },
+
+    open() {
+      const fs = require("fs");
+      const { dialog } = require("electron").remote;
+
+      const [location] = dialog.showOpenDialog({
+        properties: ["openFile"],
+        filters: [{ name: "Liturgie (*.json)", extensions: ["json"] }],
+      });
+
+      const data = fs.readFileSync(location, { encoding: "utf8" });
+
+      this.$store.dispatch("loadSongs", JSON.parse(data));
+    },
+    save() {
+      const fs = require("fs");
+      const { dialog } = require("electron").remote;
+
+      const location = dialog.showSaveDialog({
+        filters: [{ name: "Liturgie (*.json)", extensions: ["json"] }],
+      });
+      const data = JSON.stringify(this.$store.state.Songs.songs);
+      fs.writeFileSync(location, data, { encoding: "utf8" });
     },
   },
 

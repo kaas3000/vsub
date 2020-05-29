@@ -120,6 +120,10 @@ const mutations = {
     Vue.set(state, "songs", {});
   },
 
+  LOAD_SONGS(state, songs) {
+    Vue.set(state, "songs", songs);
+  },
+
   SET_VISIBLE_SONG(state, title) {
     Vue.set(state, "visibleSong", title);
   },
@@ -150,6 +154,10 @@ const actions = {
 
   clearSongs(store) {
     store.commit("CLEAR_ALL_SONGS");
+  },
+
+  loadSongs(store, args) {
+    store.commit("LOAD_SONGS", args);
   },
 
   removeSong(store, title) {
