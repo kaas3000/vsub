@@ -2,6 +2,14 @@
   <v-row align="start" justify="center" style="height: 100%;">
     <v-col class="col-4">
       <v-container class="fill-height" fluid>
+        <span v-shortkey="['arrowup']" @shortkey="previousSubtitle()"></span>
+        <span v-shortkey="['arrowdown']" @shortkey="nextSubtitle()"></span>
+        <span v-shortkey="['pageup']" @shortkey="previousSong()"></span>
+        <span v-shortkey="['pagedown']" @shortkey="nextSong()"></span>
+        <span
+          v-shortkey="['enter']"
+          @shortkey="selectVisibleSongSubtitles()"
+        ></span>
         <v-row>
           <v-col>
             <v-list>
@@ -82,12 +90,10 @@
               <v-row>
                 <v-list dense class="col-12">
                   <v-list-item
-                    :class="
-                      selectedSubtitle === 'empty' ? 'active-subtitle' : ''
-                    "
+                    :class="selectedSubtitle == false ? 'active-subtitle' : ''"
                     @click="
                       setSubtitles('', '');
-                      selectedSubtitle = 'empty';
+                      selectedSubtitle = [];
                     "
                     ><v-list-item-content>
                       <span class="font-italic grey--text grey-darken-4--text"
@@ -110,13 +116,14 @@
                       :key="`${songData.title}-${i}`"
                       active-class="active"
                       :class="
-                        `${songData.title}-${i}` === selectedSubtitle
+                        [songData.title, i].toString() ===
+                        selectedSubtitle.toString()
                           ? 'active-subtitle'
                           : ''
                       "
                       @click="
                         setSubtitles(subtitles.boven, subtitles.onder);
-                        selectedSubtitle = `${songData.title}-${i}`;
+                        selectedSubtitle = [songData.title, i];
                       "
                     >
                       <v-list-item-content>
@@ -156,7 +163,7 @@ export default {
     // ui state
     isEditingSongList: false,
     isAddingSong: false,
-    selectedSubtitle: null,
+    selectedSubtitle: [],
   }),
   computed: {
     songs() {
@@ -168,7 +175,7 @@ export default {
 
     visibleSong: {
       get() {
-        return this.$store.visibleSong;
+        return this.$store.state.Songs.visibleSong;
       },
       set(title) {
         return this.$store.dispatch("setVisibleSong", title);
@@ -176,15 +183,18 @@ export default {
     },
 
     subtitles() {
-      if (this.songData) {
-        return this.songData.verses.reduce((acc, verse) => {
+      return this.getSubtitles(this.songData);
+    },
+  },
+  methods: {
+    getSubtitles(songData) {
+      if (songData) {
+        return songData.verses.reduce((acc, verse) => {
           return [...acc, null, ...verse.regels];
         }, []);
       }
       return [];
     },
-  },
-  methods: {
     saveSong() {
       const parsedSongLines = this.parseSongText(this.newSongLines);
 
@@ -284,6 +294,66 @@ export default {
 
       // A triple newline seperates the verses
       return songText.split("\n\n\n").map((verse) => parseVerse(verse));
+    },
+
+    previousSubtitle() {
+      const [song = this.visibleSong, index = 1] = this.selectedSubtitle;
+      const subtitles = this.getSubtitles(this.$store.state.Songs.songs[song]);
+
+      let newIndex = index - 1;
+      if (subtitles[newIndex] === null) {
+        newIndex -= 1;
+      }
+      if (newIndex < 0) {
+        this.selectedSubtitle = [];
+        this.setSubtitles("", "");
+      } else {
+        this.selectedSubtitle = [song, newIndex];
+        const newSubtitles = subtitles[newIndex];
+        this.setSubtitles(newSubtitles.boven, newSubtitles.onder);
+      }
+    },
+    nextSubtitle() {
+      const [song = this.visibleSong, index = -1] = this.selectedSubtitle;
+      const subtitles = this.getSubtitles(this.$store.state.Songs.songs[song]);
+
+      // Start with simply increasing the index
+      let newIndex = index + 1;
+      // Don't increase when the last subtitle is selected
+      if (newIndex > subtitles.length - 1) {
+        newIndex = subtitles.length - 1;
+      }
+      // null-subtitles are rendered as a line (to seperate verses)
+      if (subtitles[newIndex] === null) {
+        newIndex += 1;
+      }
+
+      this.selectedSubtitle = [song, newIndex];
+
+      const newSubtitles = subtitles[newIndex];
+      this.setSubtitles(newSubtitles.boven, newSubtitles.onder);
+    },
+
+    selectVisibleSongSubtitles() {
+      this.selectedSubtitle = [];
+      this.setSubtitles("", "");
+    },
+
+    nextSong() {
+      const { songs } = this;
+
+      const index = songs.indexOf(this.visibleSong);
+      const newIndex = Math.min(index + 1, songs.length - 1);
+
+      this.visibleSong = songs[newIndex];
+    },
+    previousSong() {
+      const { songs } = this;
+
+      const index = songs.indexOf(this.visibleSong);
+      const newIndex = Math.max(index - 1, 0);
+
+      this.visibleSong = songs[newIndex];
     },
   },
 };

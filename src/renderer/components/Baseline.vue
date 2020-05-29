@@ -8,6 +8,9 @@
         @click="isLive ? disableLive() : enableLive()"
         ref="toggleLiveButton"
         :loading="isLiveTransitioning"
+        :disabled="!isVmixConnected"
+        v-shortkey="['space']"
+        @shortkey="isVmixConnected && (isLive ? disableLive() : enableLive())"
       >
         <v-icon>{{ isLive ? "mdi-stop" : "mdi-play" }}</v-icon>
       </v-btn>

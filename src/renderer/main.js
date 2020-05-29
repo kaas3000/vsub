@@ -6,6 +6,7 @@ import { ipcRenderer } from "electron";
 import Vuetify from "vuetify";
 import "@mdi/font/css/materialdesignicons.min.css";
 import "vuetify/dist/vuetify.min.css";
+import VueShortKey from "vue-shortkey";
 
 import App from "./App";
 import router from "./router";
@@ -16,6 +17,7 @@ import vMixConnectionPlugin, {
 
 Vue.use(Vuetify);
 Vue.use(vMixConnectionPlugin, new VMixConnectionPluginStore());
+Vue.use(VueShortKey);
 
 if (!process.env.IS_WEB) Vue.use(require("vue-electron"));
 Vue.http = Vue.prototype.$http = axios;
