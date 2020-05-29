@@ -47,6 +47,25 @@
               </div>
             </v-col>
           </v-row>
+
+          <v-row>
+            <v-col>
+              <v-text-field
+                label="vMix Title Editor naam boven"
+                v-model="vmixTitleFieldAbove"
+                hint="Voer hier de naam in die de bovenste ondertitel-regel heeft in de vMix Title Editor"
+                persistent-hint
+              ></v-text-field>
+            </v-col>
+            <v-col>
+              <v-text-field
+                label="vMix Title Editor naam onder"
+                v-model="vmixTitleFieldBelow"
+                hint="En voer hier de naam in van de onderste regel"
+                persistent-hint
+              ></v-text-field
+            ></v-col>
+          </v-row>
         </v-container>
       </v-card-text>
       <v-card-actions>
@@ -77,6 +96,8 @@ export default {
       overlay: this.$store.state.Settings.vmixOverlay,
 
       vmixInputNames: [],
+      vmixTitleFieldAbove: this.$store.state.Settings.vmixTitleFieldAbove,
+      vmixTitleFieldBelow: this.$store.state.Settings.vmixTitleFieldBelow,
     };
   },
 
@@ -117,6 +138,8 @@ export default {
       this.$store.dispatch("setVmixHost", this.hostName);
       this.$store.dispatch("setVmixInputName", this.inputName);
       this.$store.dispatch("setVmixOverlay", this.overlay);
+      this.$store.dispatch("setVmixTitleFieldAbove", this.vmixTitleFieldAbove);
+      this.$store.dispatch("setVmixTitleFieldBelow", this.vmixTitleFieldBelow);
     },
   },
   mounted() {

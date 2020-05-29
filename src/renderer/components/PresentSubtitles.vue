@@ -224,6 +224,9 @@ export default {
     },
 
     setSubtitles(above, below) {
+      const aboveName = this.$store.state.Settings.vmixTitleFieldAbove;
+      const belowName = this.$store.state.Settings.vmixTitleFieldBelow;
+
       this.execVmixCommands([
         {
           Function: "PauseRender",
@@ -232,13 +235,13 @@ export default {
         {
           Function: "SetText",
           Input: this.$store.state.Settings.vmixInputName,
-          SelectedName: "Headline.Text",
+          SelectedName: aboveName,
           Value: above,
         },
         {
           Function: "SetText",
           Input: this.$store.state.Settings.vmixInputName,
-          SelectedName: "Description.Text",
+          SelectedName: belowName,
           Value: below,
         },
         {
