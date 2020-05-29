@@ -4,8 +4,8 @@ const state = {
   vmixHost: "127.0.0.1",
   vmixInputName: "Ondertitels",
   vmixOverlay: 1,
-  vmixTitleFieldAbove: "",
-  vmixTitleFieldBelow: "",
+  vmixTitleFieldAbove: "Headline.Text",
+  vmixTitleFieldBelow: "Description.Text",
 };
 
 const mutations = {

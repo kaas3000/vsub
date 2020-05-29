@@ -69,11 +69,19 @@
                     style="flex: 1 1 auto; overflow: auto; padding-top: 1em;"
                     auto-grow
                     label="Tekstregels"
+                    type="number"
                     v-model="newSongLines"
                   ></v-textarea>
-                  <v-btn style="flex: 0 0 auto;" id="Opslaan" @click="saveSong"
-                    >Opslaan</v-btn
-                  >
+                  <v-row style="flex: 0 0 auto;">
+                    <v-col>
+                      <v-btn block @click="resetAddingSong">Annuleren</v-btn>
+                    </v-col>
+                    <v-col>
+                      <v-btn block color="primary" @click="saveSong"
+                        >Opslaan</v-btn
+                      >
+                    </v-col>
+                  </v-row>
                 </v-container>
               </v-card>
             </v-dialog>
@@ -107,7 +115,7 @@
 
                   <template v-for="(subtitles, i) in subtitles">
                     <v-divider
-                      v-if="subtitles === null"
+                      v-if="subtitles.type === 'divider'"
                       :key="`${songData.title}-${i}`"
                     ></v-divider>
 
@@ -122,24 +130,24 @@
                           : ''
                       "
                       @click="
-                        setSubtitles(subtitles.boven, subtitles.onder);
+                        setSubtitles(subtitles.above, subtitles.below);
                         selectedSubtitle = [songData.title, i];
                       "
                     >
                       <v-list-item-content>
                         <span
-                          v-if="subtitles.boven === ''"
+                          v-if="subtitles.above === ''"
                           class="font-italic grey--text grey-darken-4--text"
                           >lege regel</span
                         >
-                        {{ subtitles.boven }}
+                        {{ subtitles.above }}
                         <br />
                         <span
-                          v-if="subtitles.onder === ''"
+                          v-if="subtitles.below === ''"
                           class="font-italic grey--text grey-darken-4--text"
                           >lege regel</span
                         >
-                        {{ subtitles.onder }}
+                        {{ subtitles.below }}
                       </v-list-item-content>
                     </v-list-item>
                   </template>
@@ -189,9 +197,7 @@ export default {
   methods: {
     getSubtitles(songData) {
       if (songData) {
-        return songData.verses.reduce((acc, verse) => {
-          return [...acc, null, ...verse.regels];
-        }, []);
+        return songData.subtitles;
       }
       return [];
     },
@@ -203,7 +209,7 @@ export default {
         this.$store.dispatch("updateSong", {
           oldTitle: this.oldSongTitle,
           title: this.newSongTitle,
-          verses: parsedSongLines,
+          subtitles: parsedSongLines,
         });
 
         // The old song title has been used, reset it
@@ -214,10 +220,14 @@ export default {
       } else {
         this.$store.dispatch("addSong", {
           title: this.newSongTitle,
-          verses: parsedSongLines,
+          subtitles: parsedSongLines,
         });
       }
 
+      this.resetAddingSong();
+    },
+
+    resetAddingSong() {
       this.newSongTitle = "";
       this.newSongLines = "";
       this.isAddingSong = false;
@@ -269,37 +279,24 @@ export default {
     },
 
     createSongText(songData) {
-      return songData.verses
-        .map((verse) => {
-          return verse.regels
-            .map(({ boven, onder }) => `${boven}\n${onder}`)
-            .join("\n\n");
-        })
-        .join("\n\n\n");
+      return songData.subtitles
+        .filter(({ type }) => type === "subtitle")
+        .map(({ above, below }) => `${above}\n${below}`)
+        .join("\n")
+        .trim();
     },
     parseSongText(songText) {
-      const parseSubtitle = (subtitle) => {
-        // A single newline seperates two textlines in one subtitle
-        const lines = subtitle.split("\n");
+      const songLines = songText.split("\n");
+      const subtitles = [];
+      for (let i = 0; i < songLines.length; i += 2) {
+        subtitles.push({
+          type: "subtitle",
+          above: songLines[i] || "",
+          below: songLines[i + 1] || "",
+        });
+      }
 
-        // Parse the subtitle line and normalize the output
-        if (lines.length === 1) {
-          return { boven: "", onder: lines[0] };
-        }
-        if (lines.length > 1) {
-          return { boven: lines[0], onder: lines[1] };
-        }
-        return { boven: "", onder: "" };
-      };
-      const parseVerse = (verse) => ({
-        regels: verse
-          // A double newline seperates different subtitles
-          .split("\n\n")
-          .map(parseSubtitle),
-      });
-
-      // A triple newline seperates the verses
-      return songText.split("\n\n\n").map((verse) => parseVerse(verse));
+      return subtitles;
     },
 
     previousSubtitle() {
@@ -316,7 +313,7 @@ export default {
       } else {
         this.selectedSubtitle = [song, newIndex];
         const newSubtitles = subtitles[newIndex];
-        this.setSubtitles(newSubtitles.boven, newSubtitles.onder);
+        this.setSubtitles(newSubtitles.above, newSubtitles.below);
       }
     },
     nextSubtitle() {
@@ -337,7 +334,7 @@ export default {
       this.selectedSubtitle = [song, newIndex];
 
       const newSubtitles = subtitles[newIndex];
-      this.setSubtitles(newSubtitles.boven, newSubtitles.onder);
+      this.setSubtitles(newSubtitles.above, newSubtitles.below);
     },
 
     selectVisibleSongSubtitles() {

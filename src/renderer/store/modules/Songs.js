@@ -5,79 +5,7 @@ const state = {
   active: null,
 
   visibleSong: "Psalm 1",
-  songs: {
-    "Psalm 1": {
-      title: "Psalm 1",
-      verses: [
-        {
-          regels: [
-            {
-              boven: "Regel boven",
-              onder: "regel onderaan",
-            },
-            {
-              boven: "Regel 2 boven",
-              onder: "Regel 2",
-            },
-          ],
-        },
-        {
-          regels: [
-            {
-              boven: "Vers twee",
-              onder: "regel onderaan",
-            },
-            {
-              boven: "Regel 2 boven",
-              onder: "Regel 2",
-            },
-          ],
-        },
-      ],
-    },
-
-    "Opwekking 2": {
-      title: "Opwekking 2",
-      verses: [
-        {
-          regels: [
-            {
-              boven: "Regel boven",
-              onder: "regel onderaan",
-            },
-            {
-              boven: "Regel 2 boven",
-              onder: "Regel 2",
-            },
-          ],
-        },
-        {
-          regels: [
-            {
-              boven: "Vers twee",
-              onder: "regel onderaan",
-            },
-            {
-              boven: "Regel 2 boven",
-              onder: "Regel 2",
-            },
-          ],
-        },
-        {
-          regels: [
-            {
-              boven: "Vers twee",
-              onder: "regel onderaan",
-            },
-            {
-              boven: "Regel 2 boven",
-              onder: "Regel 2",
-            },
-          ],
-        },
-      ],
-    },
-  },
+  songs: {},
 };
 
 const mutations = {
@@ -94,21 +22,21 @@ const mutations = {
     }
   },
 
-  ADD_SONG(state, { title, verses = [] }) {
+  ADD_SONG(state, { title, subtitles = [] }) {
     Vue.set(state.songs, title, {
       title,
-      verses,
+      subtitles,
     });
   },
 
-  UPDATE_SONG(state, { oldTitle, title, verses }) {
+  UPDATE_SONG(state, { oldTitle, title, subtitles }) {
     if (state.songs[oldTitle] && oldTitle !== title) {
       Vue.delete(state.songs, oldTitle);
     }
 
     Vue.set(state.songs, title, {
       title,
-      verses,
+      subtitles,
     });
 
     Vue.set(state, "visibleSong", title);
