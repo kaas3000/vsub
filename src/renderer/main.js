@@ -16,7 +16,7 @@ import vMixConnectionPlugin, {
 
 Vue.use(Vuetify);
 Vue.use(vMixConnectionPlugin, new VMixConnectionPluginStore());
-Vue.use(VueShortKey, { prevent: ["input", "textarea"] });
+Vue.use(VueShortKey, { prevent: ["input", "textarea", "button", ".v-btn"] });
 
 if (!process.env.IS_WEB) Vue.use(require("vue-electron"));
 Vue.http = Vue.prototype.$http = axios;
