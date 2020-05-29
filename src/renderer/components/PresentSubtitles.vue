@@ -200,7 +200,7 @@ export default {
 
       // When an old songtitle is set, the existing song has to be updated
       if (this.oldSongTitle !== "") {
-        this.store.dispatch("updateSong", {
+        this.$store.dispatch("updateSong", {
           oldTitle: this.oldSongTitle,
           title: this.newSongTitle,
           verses: parsedSongLines,
@@ -208,6 +208,9 @@ export default {
 
         // The old song title has been used, reset it
         this.oldSongTitle = "";
+
+        // The song might load under a new title. Reset the subtitles.
+        this.selectedSubtitle = [];
       } else {
         this.$store.dispatch("addSong", {
           title: this.newSongTitle,
@@ -255,7 +258,7 @@ export default {
 
     editSong(title) {
       this.isAddingSong = true;
-      this.oldSongTitle = "";
+      this.oldSongTitle = title;
       this.newSongTitle = title;
 
       const songData = this.$store.state.Songs.songs[title];

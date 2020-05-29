@@ -110,6 +110,8 @@ const mutations = {
       title,
       verses,
     });
+
+    Vue.set(state, "visibleSong", title);
   },
 
   REMOVE_SONG(state, title) {
