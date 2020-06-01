@@ -29,9 +29,11 @@ test: off
 deploy:
   # Deploy to GitHub Releases
   - provider: GitHub
-    artifact: /.*\.nupkg/ # upload all NuGet packages to release assets
-    draft: false
+    artifact: /build/.*\.exe/ # upload all NuGet packages to release assets
+    draft: true
     prerelease: false
+    auth_token:
+      secure: 29CVDRQy0kqoA8UmgE57r0r2B2x2Ax5FmXLXaqlvXapDH4PBXvxP522sxp4qRIEv
     on:
       branch: master # release from master branch only
       APPVEYOR_REPO_TAG: true # deploy on tag push only
