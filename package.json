@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "author": "",
   "description": "An electron-vue project",
-  "license": null,
+  "license": "MIT",
   "main": "./dist/electron/main.js",
   "scripts": {
     "build": "node .electron-vue/build.js && electron-builder",
@@ -20,7 +20,7 @@
   },
   "build": {
     "productName": "vsub",
-    "appId": "com.example.yourapp",
+    "appId": "com.gkvmiddelburg.vsub",
     "directories": {
       "output": "build"
     },
