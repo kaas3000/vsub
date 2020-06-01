@@ -25,7 +25,7 @@ export class VMixConnectionPluginStore {
     }
     return this.storeVM.$data.internal.connection.connected();
   }
-  setConnection(host) {
+  setConnection(host, options = {}) {
     // Shutdown/Destroy old connection?
     if (this.storeVM.$data.internal.connection) {
       console.log(
@@ -35,7 +35,7 @@ export class VMixConnectionPluginStore {
       this.storeVM.$data.internal.connection.shutdown();
     }
     // @ts-ignore
-    this.storeVM.$data.internal.connection = new ConnectionTCP(host);
+    this.storeVM.$data.internal.connection = new ConnectionTCP(host, options);
   }
   send(commands) {
     this.storeVM.$data.internal.connection.send(commands);

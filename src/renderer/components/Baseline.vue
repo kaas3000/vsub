@@ -51,6 +51,8 @@ export default {
 
     // The tally uses the index instead of the name of the input
     vmixInputIndex: null,
+
+    vmixConnectionInterval: null,
   }),
 
   computed: {
@@ -61,6 +63,12 @@ export default {
     },
     isVmixConnected() {
       return this.$vMixConnection.connected;
+    },
+  },
+
+  watch: {
+    isVmixConnected: function vmixConnectionChange(val) {
+      this.handleVmixConnectionChange(val);
     },
   },
 
@@ -102,7 +110,9 @@ export default {
         null
       );
 
-      this.vmixInputIndex = xpathResult.numberValue;
+      if (xpathResult.numberValue) {
+        this.vmixInputIndex = xpathResult.numberValue;
+      }
 
       // With a new id, the tally state has to be updated too
       this.execVmixCommands("TALLY");
@@ -131,19 +141,31 @@ export default {
       const data = JSON.stringify(this.$store.state.Songs.songs);
       fs.writeFileSync(location, data, { encoding: "utf8" });
     },
+
+    handleVmixConnectionChange(newVal) {
+      if (newVal === false) {
+        this.vmixConnectionInterval = setInterval(() => {
+          this.setVmixConnection(this.$store.state.Settings.vmixHost, {
+            autoReconnect: false,
+          });
+        }, 1000);
+      } else {
+        clearInterval(this.vmixConnectionInterval);
+
+        this.$vMixConnection.on("tally", this.setLiveFromTally);
+        this.$vMixConnection.on("tally", () => this.execVmixCommands("XML"));
+        this.execVmixCommands("SUBSCRIBE TALLY");
+
+        // Request the input index
+        this.$vMixConnection.on("xml", this.setSubtitleInputIndexFromState);
+        this.execVmixCommands("XML");
+      }
+    },
   },
 
   mounted() {
-    this.setVmixConnection(this.$store.state.Settings.vmixHost, {
-      autoReconnect: true,
-    });
-
-    this.$vMixConnection.on("tally", this.setLiveFromTally);
-    this.execVmixCommands("SUBSCRIBE TALLY");
-
-    // Request the input index
-    this.$vMixConnection.on("xml", this.setSubtitleInputIndexFromState);
-    this.execVmixCommands("XML");
+    // Connect to vmix using the reconnect functionality
+    this.handleVmixConnectionChange(false);
   },
 };
 </script>
