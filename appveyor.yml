@@ -1,8 +1,6 @@
 version: 0.1.{build}
 
-branches:
-  only:
-    - master
+skip_non_tags: true
 
 image: Visual Studio 2017
 platform:
@@ -27,3 +25,13 @@ build_script:
   - yarn build
 
 test: off
+
+deploy:
+  # Deploy to GitHub Releases
+  - provider: GitHub
+    artifact: /.*\.nupkg/ # upload all NuGet packages to release assets
+    draft: false
+    prerelease: false
+    on:
+      branch: master # release from master branch only
+      APPVEYOR_REPO_TAG: true # deploy on tag push only
