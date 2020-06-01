@@ -26,10 +26,14 @@ build_script:
 
 test: off
 
+artifacts:
+  - path: build/*.exe
+    name: binary
+
 deploy:
   # Deploy to GitHub Releases
   - provider: GitHub
-    artifact: /build/.*\.exe/ # upload all NuGet packages to release assets
+    artifact: binary
     draft: true
     prerelease: false
     auth_token:
