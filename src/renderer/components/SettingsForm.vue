@@ -10,7 +10,7 @@
             <v-col>
               <v-text-field
                 label="vMix IP addres"
-                v-model="hostName"
+                v-model="vmisAddress"
                 hint="Voer hier het IP addres, of de hostname, in van de computer waar vMix op draait"
                 persistent-hint
                 @blur="loadVmixInputNames"
@@ -86,12 +86,12 @@
 </template>
 
 <script>
-import { ConnectionTCP } from "node-vmix";
+import axios from "axios";
 
 export default {
   data() {
     return {
-      hostName: this.$store.state.Settings.vmixHost,
+      vmisAddress: this.$store.state.Settings.vmixHost,
       inputName: this.$store.state.Settings.vmixInputName,
       overlay: this.$store.state.Settings.vmixOverlay,
 
@@ -102,40 +102,31 @@ export default {
   },
 
   methods: {
-    loadVmixInputNames() {
-      const vmixConnection = new ConnectionTCP(this.hostName);
+    async loadVmixInputNames() {
       this.vmixInputNames = [];
 
-      vmixConnection.on(
-        "xml",
-        function onXml(xml) {
-          const xmlDocument = new DOMParser().parseFromString(xml, "text/xml");
-          // Query the input number from the xml document using xpath
-          const xpathResult = xmlDocument.evaluate(
-            `/vmix/inputs//input/@title`,
-            xmlDocument,
-            document.createNSResolver(xmlDocument.documentElement),
-            XPathResult.ANY_TYPE,
-            null
-          );
-
-          for (
-            let name = xpathResult.iterateNext();
-            name !== null;
-            name = xpathResult.iterateNext()
-          ) {
-            this.vmixInputNames.push(name.nodeValue);
-          }
-
-          vmixConnection.send("QUIT");
-        }.bind(this)
+      const { data } = await axios.get(`http://${this.vmisAddress}/api`);
+      const xmlDocument = new DOMParser().parseFromString(data, "text/xml");
+      // Query the input number from the xml document using xpath
+      const xpathResult = xmlDocument.evaluate(
+        `/vmix/inputs//input/@title`,
+        xmlDocument,
+        document.createNSResolver(xmlDocument.documentElement),
+        XPathResult.ANY_TYPE,
+        null
       );
 
-      vmixConnection.send("XML");
+      for (
+        let name = xpathResult.iterateNext();
+        name !== null;
+        name = xpathResult.iterateNext()
+      ) {
+        this.vmixInputNames.push(name.nodeValue);
+      }
     },
 
     storeNewSettings() {
-      this.$store.dispatch("setVmixHost", this.hostName);
+      this.$store.dispatch("setVmixHost", this.vmisAddress);
       this.$store.dispatch("setVmixInputName", this.inputName);
       this.$store.dispatch("setVmixOverlay", this.overlay);
       this.$store.dispatch("setVmixTitleFieldAbove", this.vmixTitleFieldAbove);

@@ -28,13 +28,18 @@
         <router-view></router-view>
       </v-container>
     </v-content>
-    <v-footer :color="accentColor" app>
-      <span class="white--text">GKV 2019 {{ ip }}:8067</span>
+    <v-footer :color="`${accentColor} white--text`" app>
+      <span>
+        VMix connection:
+        <v-badge dot inline :color="vmixConnectionColor"></v-badge>
+      </span>
     </v-footer>
   </v-app>
 </template>
 
 <script>
+// eslint-disable-next-line no-unused-vars
+import { ConnectionTCP, ConnectionHTTP } from "node-vmix";
 const ip = require("ip");
 
 export default {
@@ -51,24 +56,32 @@ export default {
 
     // The tally uses the index instead of the name of the input
     vmixInputIndex: null,
+    isVmixTitleAvailable: false,
 
     vmixConnectionInterval: null,
   }),
 
   computed: {
     accentColor() {
-      if (!this.isVmixConnected) return "secondary";
+      if (!this.isVmixConnected || !this.isVmixTitleAvailable)
+        return "secondary";
       if (this.isLive) return "orange";
       return "primary";
     },
     isVmixConnected() {
       return this.$vMixConnection.connected;
     },
-  },
 
-  watch: {
-    isVmixConnected: function vmixConnectionChange(val) {
-      this.handleVmixConnectionChange(val);
+    vmixConnectionColor() {
+      if (this.isVmixConnected && this.isVmixTitleAvailable) {
+        return "green";
+      }
+
+      if (this.isVmixConnected && !this.isVmixTitleAvailable) {
+        return "orange";
+      }
+
+      return "red";
     },
   },
 
@@ -151,21 +164,38 @@ export default {
         }, 1000);
       } else {
         clearInterval(this.vmixConnectionInterval);
-
-        this.$vMixConnection.on("tally", this.setLiveFromTally);
-        this.$vMixConnection.on("tally", () => this.execVmixCommands("XML"));
-        this.execVmixCommands("SUBSCRIBE TALLY");
-
-        // Request the input index
-        this.$vMixConnection.on("xml", this.setSubtitleInputIndexFromState);
-        this.execVmixCommands("XML");
       }
     },
   },
 
   mounted() {
-    // Connect to vmix using the reconnect functionality
-    this.handleVmixConnectionChange(false);
+    this.setVmixConnection(this.$store.state.Settings.vmixHost, {
+      autoReconnect: false,
+    });
+
+    this.$vMixConnection.watchXpath(
+      `/vmix/inputs//input[@title="${this.$store.state.Settings.vmixInputName}"]/@number`,
+      (inputIndex) => {
+        const index = parseInt(inputIndex, 10);
+        if (Number.isNaN(index)) {
+          this.isVmixTitleAvailable = false;
+        } else {
+          this.isVmixTitleAvailable = true;
+          this.vmixInputIndex = parseInt(inputIndex, 10);
+        }
+      }
+    );
+
+    this.$vMixConnection.watchXpath(
+      `/vmix/overlays/overlay[@number=${this.$store.state.Settings.vmixOverlay}]`,
+      (activeInput) => {
+        const newIsLive = this.vmixInputIndex === parseInt(activeInput, 10);
+        if (this.isLive !== newIsLive) {
+          this.isLiveTransitioning = false;
+        }
+        this.isLive = this.vmixInputIndex === parseInt(activeInput, 10);
+      }
+    );
   },
 };
 </script>
