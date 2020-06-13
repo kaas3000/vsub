@@ -300,7 +300,7 @@ export default {
     },
 
     previousSubtitle() {
-      const [song = this.visibleSong, index = 1] = this.selectedSubtitle;
+      const [song = this.visibleSong, index = 0] = this.selectedSubtitle;
       const subtitles = this.getSubtitles(this.$store.state.Songs.songs[song]);
 
       let newIndex = index - 1;
