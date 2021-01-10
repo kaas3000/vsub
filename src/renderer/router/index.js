@@ -18,7 +18,7 @@ export default new Router({
         {
           path: "settings",
           name: "Settings",
-          component: require("@/components/SettingsForm").default,
+          component: require("@/components/settings/SettingsForm").default,
         },
       ],
     },

@@ -1,48 +1,39 @@
 import Vue from "vue";
 
+const settingNames = {
+  VMIX_HOST: "vmixHost",
+  VMIX_INPUT_NAME: "vmixInputName",
+  VMIX_OVERLAY: "vmixOverlay",
+  VMIX_TITLE_FIELD_ABOVE: "vmixTitleFieldAbove",
+  VMIX_TITLE_FIELD_BELOW: "vmixTitleFieldBelow",
+  SUBTITLE_EDITOR_WIDTH_HINT: "subtitleEditorWidthHint",
+  SUBTITLE_EDITOR_FONT_FAMILY: "subtitleEditorFontFamily",
+};
+
 const state = {
-  vmixHost: "127.0.0.1",
-  vmixInputName: "Ondertitels",
-  vmixOverlay: 1,
-  vmixTitleFieldAbove: "Headline.Text",
-  vmixTitleFieldBelow: "Description.Text",
+  [settingNames.VMIX_HOST]: "127.0.0.1",
+  [settingNames.VMIX_INPUT_NAME]: "Ondertitels",
+  [settingNames.VMIX_OVERLAY]: 1,
+  [settingNames.VMIX_TITLE_FIELD_ABOVE]: "Headline.Text",
+  [settingNames.VMIX_TITLE_FIELD_BELOW]: "Description.Text",
+
+  [settingNames.SUBTITLE_EDITOR_WIDTH_HINT]: 300,
+  [settingNames.SUBTITLE_EDITOR_FONT_FAMILY]: "Roboto",
 };
 
 const mutations = {
-  SET_VMIX_HOST(state, newHost) {
-    Vue.set(state, "vmixHost", newHost);
-  },
-  SET_VMIX_INPUT_NAME(state, newInputName) {
-    Vue.set(state, "vmixInputName", newInputName);
-  },
-  SET_VMIX_OVERLAY(state, newOverlay) {
-    Vue.set(state, "vmixOverlay", newOverlay);
-  },
-  SET_VMIX_TITLE_FIELD_ABOVE(state, name) {
-    Vue.set(state, "vmixTitleFieldAbove", name);
-  },
-  SET_VMIX_TITLE_FIELD_BELOW(state, name) {
-    Vue.set(state, "vmixTitleFieldBelow", name);
+  UPDATE_SETTING(state, { setting, newValue }) {
+    Vue.set(state, setting, newValue);
   },
 };
 
 const actions = {
-  setVmixHost({ commit }, newHost) {
-    commit("SET_VMIX_HOST", newHost);
-  },
-  setVmixInputName({ commit }, newInputName) {
-    commit("SET_VMIX_INPUT_NAME", newInputName);
-  },
-  setVmixOverlay({ commit }, newOverlay) {
-    commit("SET_VMIX_OVERLAY", newOverlay);
-  },
-  setVmixTitleFieldAbove({ commit }, name) {
-    commit("SET_VMIX_TITLE_FIELD_ABOVE", name);
-  },
-  setVmixTitleFieldBelow({ commit }, name) {
-    commit("SET_VMIX_TITLE_FIELD_BELOW", name);
+  updateSetting({ commit }, { setting, newValue }) {
+    commit("UPDATE_SETTING", { setting, newValue });
   },
 };
+
+export { settingNames };
 
 export default {
   state,
