@@ -15,9 +15,9 @@
         @click="isLive ? disableLive() : enableLive()"
         ref="toggleLiveButton"
         :loading="isLiveTransitioning"
-        :disabled="!isVmixConnected"
+        :disabled="!vmixConnectionState"
         v-shortkey="['space']"
-        @shortkey="isVmixConnected && (isLive ? disableLive() : enableLive())"
+        @shortkey="vmixConnectionState && (isLive ? disableLive() : enableLive())"
       >
         <v-icon>{{ isLive ? "mdi-stop" : "mdi-play" }}</v-icon>
       </v-btn>
@@ -28,7 +28,7 @@
         <router-view></router-view>
       </v-container>
     </v-content>
-    <v-footer :color="`${accentColor} white--text`" app>
+    <v-footer color="primary white--text" app>
       <span>
         VMix connection:
         <v-badge dot inline :color="vmixConnectionColor"></v-badge>
@@ -38,6 +38,7 @@
 </template>
 
 <script>
+import VmixConnnectionState from "@/vmixConnection/VmixConnectionState";
 // eslint-disable-next-line no-unused-vars
 import { ConnectionTCP, ConnectionHTTP } from "node-vmix";
 const ip = require("ip");
@@ -51,7 +52,6 @@ export default {
     drawer: null,
     ip: ip.address(),
 
-    isLive: false,
     isLiveTransitioning: false,
 
     // The tally uses the index instead of the name of the input
@@ -63,38 +63,44 @@ export default {
 
   computed: {
     accentColor() {
-      if (!this.isVmixConnected || !this.isVmixTitleAvailable)
-        return "secondary";
-      if (this.isLive) return "orange";
-      return "primary";
+      if (!this.vmixConnectionState === VmixConnnectionState.READY) return "secondary";
+
+      if (this.isLive) return "red";
+
+      return "green";
     },
-    isVmixConnected() {
+
+    vmixConnectionState() {
       return this.$vMixConnection.connected;
     },
 
     vmixConnectionColor() {
-      if (this.isVmixConnected && this.isVmixTitleAvailable) {
+      if (
+        this.vmixConnectionState === VmixConnnectionState.READY ||
+        this.vmixConnectionState === VmixConnnectionState.LIVE
+      ) {
         return "green";
       }
 
-      if (this.isVmixConnected && !this.isVmixTitleAvailable) {
+      if (this.vmixConnectionState === VmixConnnectionState.CONNECTED) {
         return "orange";
       }
 
       return "red";
     },
+
+    isLive() {
+      return this.vmixConnectionState === VmixConnnectionState.LIVE;
+    },
+  },
+
+  watch: {
+    isLive: function isLiveWatcher() {
+      this.isLiveTransitioning = false;
+    },
   },
 
   methods: {
-    setLiveFromTally(tallyData) {
-      if (this.vmixInputIndex === null) {
-        return;
-      }
-
-      this.isLiveTransitioning = false;
-      this.isLive = tallyData.program.includes(this.vmixInputIndex);
-    },
-
     enableLive() {
       this.isLiveTransitioning = true;
       this.execVmixCommands({
@@ -111,26 +117,6 @@ export default {
       });
     },
 
-    setSubtitleInputIndexFromState(xml) {
-      const xmlDocument = new DOMParser().parseFromString(xml, "text/xml");
-
-      // Query the input number from the xml document using xpath
-      const xpathResult = xmlDocument.evaluate(
-        `/vmix/inputs//input[@title="${this.$store.state.Settings.vmixInputName}"]/@number`,
-        xmlDocument,
-        document.createNSResolver(xmlDocument.documentElement),
-        XPathResult.NUMBER_TYPE,
-        null
-      );
-
-      if (xpathResult.numberValue) {
-        this.vmixInputIndex = xpathResult.numberValue;
-      }
-
-      // With a new id, the tally state has to be updated too
-      this.execVmixCommands("TALLY");
-    },
-
     open() {
       const fs = require("fs");
       const { dialog } = require("electron").remote;
@@ -144,6 +130,7 @@ export default {
 
       this.$store.dispatch("loadSongs", JSON.parse(data));
     },
+
     save() {
       const fs = require("fs");
       const { dialog } = require("electron").remote;
@@ -154,46 +141,15 @@ export default {
       const data = JSON.stringify(this.$store.state.Songs.songs);
       fs.writeFileSync(location, data, { encoding: "utf8" });
     },
-
-    handleVmixConnectionChange(newVal) {
-      if (newVal === false) {
-        this.vmixConnectionInterval = setInterval(() => {
-          this.setVmixConnection(this.$store.state.Settings.vmixHost, {
-            autoReconnect: false,
-          });
-        }, 1000);
-      } else {
-        clearInterval(this.vmixConnectionInterval);
-      }
-    },
   },
 
   mounted() {
-    this.setVmixConnection(this.$store.state.Settings.vmixHost, {
-      autoReconnect: false,
-    });
-
-    this.$vMixConnection.watchXpath(
-      `/vmix/inputs//input[@title="${this.$store.state.Settings.vmixInputName}"]/@number`,
-      (inputIndex) => {
-        const index = parseInt(inputIndex, 10);
-        if (Number.isNaN(index)) {
-          this.isVmixTitleAvailable = false;
-        } else {
-          this.isVmixTitleAvailable = true;
-          this.vmixInputIndex = parseInt(inputIndex, 10);
-        }
-      }
-    );
-
-    this.$vMixConnection.watchXpath(
-      `/vmix/overlays/overlay[@number=${this.$store.state.Settings.vmixOverlay}]`,
-      (activeInput) => {
-        const newIsLive = this.vmixInputIndex === parseInt(activeInput, 10);
-        if (this.isLive !== newIsLive) {
-          this.isLiveTransitioning = false;
-        }
-        this.isLive = this.vmixInputIndex === parseInt(activeInput, 10);
+    this.setVmixConnection(
+      this.$store.state.Settings.vmixHost,
+      this.$store.state.Settings.vmixInputName,
+      this.$store.state.Settings.vmixOverlay,
+      {
+        autoReconnect: false,
       }
     );
   },
