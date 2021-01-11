@@ -36,40 +36,12 @@
             <v-btn tile text @click="isEditingSongList = !isEditingSongList">Bewerkmodus</v-btn>
           </v-col>
           <v-col>
-            <v-dialog v-model="isAddingSong" content-class="addSong" @input="handleEditSongPopup">
-              <template v-slot:activator="{ on }">
-                <v-btn tile block v-on="on">+ Nieuw Lied</v-btn>
-              </template>
-
-              <v-card class="d-flex flex-column">
-                <v-card-title>Ondertitels bewerken</v-card-title>
-                <v-container fluid class="h-100 d-flex flex-column">
-                  <v-text-field style="flex: 0 0 auto;" v-model="newSongTitle" label="Titel"></v-text-field>
-                  <div style="position: relative; flex: 1 1 auto;">
-                    <div class="subtitleWidthHint" :style="`width: ${subtitleWidthHint}px;`"></div>
-                    <v-textarea
-                      outlined
-                      auto-grow
-                      :style="`padding-top: 1em; font-family: ${subtitleFontFamily};`"
-                      rows="10"
-                      label="Tekstregels"
-                      type="number"
-                      v-model="newSongLines"
-                    >
-                    </v-textarea>
-                  </div>
-
-                  <v-row style="flex: 0 0 auto;">
-                    <v-col>
-                      <v-btn block @click="resetAddingSong">Annuleren</v-btn>
-                    </v-col>
-                    <v-col>
-                      <v-btn block color="primary" @click="saveSong">Opslaan</v-btn>
-                    </v-col>
-                  </v-row>
-                </v-container>
-              </v-card>
-            </v-dialog>
+            <v-btn tile block @click="isAddingSong = true">+ Nieuw Lied</v-btn>
+            <edit-song
+              :isVisible="isAddingSong"
+              :currentlyEditingSongTitle="editSongCurrentlyEditingTitle"
+              @cancel="cancelEditSongPopup"
+            ></edit-song>
           </v-col>
         </v-row>
       </v-container>
@@ -170,11 +142,14 @@
 </template>
 
 <script>
+import EditSong from "./sidebar/EditSong";
+
 export default {
+  components: {
+    EditSong,
+  },
   data: () => ({
-    oldSongTitle: "",
-    newSongTitle: "",
-    newSongLines: "",
+    editSongCurrentlyEditingTitle: null,
 
     // ui state
     isEditingSongList: false,
@@ -201,14 +176,6 @@ export default {
     subtitles() {
       return this.getSubtitles(this.songData);
     },
-
-    subtitleWidthHint() {
-      return this.$store.state.Settings.subtitleEditorWidthHint;
-    },
-
-    subtitleFontFamily() {
-      return this.$store.state.Settings.subtitleEditorFontFamily;
-    },
   },
   methods: {
     getSubtitles(songData) {
@@ -216,37 +183,6 @@ export default {
         return songData.subtitles;
       }
       return [];
-    },
-    saveSong() {
-      const parsedSongLines = this.parseSongText(this.newSongLines);
-
-      // When an old songtitle is set, the existing song has to be updated
-      if (this.oldSongTitle !== "") {
-        this.$store.dispatch("updateSong", {
-          oldTitle: this.oldSongTitle,
-          title: this.newSongTitle,
-          subtitles: parsedSongLines,
-        });
-
-        // The old song title has been used, reset it
-        this.oldSongTitle = "";
-
-        // The song might load under a new title. Reset the subtitles.
-        this.selectedSubtitle = [];
-      } else {
-        this.$store.dispatch("addSong", {
-          title: this.newSongTitle,
-          subtitles: parsedSongLines,
-        });
-      }
-
-      this.resetAddingSong();
-    },
-
-    resetAddingSong() {
-      this.newSongTitle = "";
-      this.newSongLines = "";
-      this.isAddingSong = false;
     },
 
     setSubtitles(above, below) {
@@ -277,42 +213,14 @@ export default {
       ]);
     },
 
-    handleEditSongPopup(isOpen) {
-      if (isOpen === false) {
-        this.oldSongTitle = "";
-        this.newSongTitle = "";
-        this.newSongLines = "";
-      }
+    cancelEditSongPopup() {
+      this.isAddingSong = false;
+      this.editSongCurrentlyEditingTitle = null;
     },
 
     editSong(title) {
+      this.editSongCurrentlyEditingTitle = title;
       this.isAddingSong = true;
-      this.oldSongTitle = title;
-      this.newSongTitle = title;
-
-      const songData = this.$store.state.Songs.songs[title];
-      this.newSongLines = this.createSongText(songData);
-    },
-
-    createSongText(songData) {
-      return songData.subtitles
-        .filter(({ type }) => type === "subtitle")
-        .map(({ above, below }) => `${above}\n${below}`)
-        .join("\n")
-        .trim();
-    },
-    parseSongText(songText) {
-      const songLines = songText.split("\n");
-      const subtitles = [];
-      for (let i = 0; i < songLines.length; i += 2) {
-        subtitles.push({
-          type: "subtitle",
-          above: songLines[i] || "",
-          below: songLines[i + 1] || "",
-        });
-      }
-
-      return subtitles;
     },
 
     previousSubtitle() {
