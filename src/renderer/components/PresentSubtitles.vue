@@ -21,6 +21,8 @@
                     <v-btn icon>
                       <v-icon color="grey lighten-1" @click="editSong(song)">mdi-pencil</v-icon>
                     </v-btn>
+                  </v-list-item-action>
+                  <v-list-item-action v-if="isEditingSongList" class="ml-0">
                     <v-btn icon @click="$store.dispatch('removeSong', song)">
                       <v-icon color="grey lighten-1">mdi-delete</v-icon>
                     </v-btn>
