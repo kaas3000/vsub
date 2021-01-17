@@ -3,8 +3,8 @@
     <v-card class="d-flex flex-column">
       <v-card-title>Ondertitels bewerken</v-card-title>
       <v-container fluid class="h-100 d-flex flex-column">
-        <v-text-field style="flex: 0 0 auto;" v-model="songTitle" label="Titel"></v-text-field>
-        <div style="position: relative; flex: 1 1 auto;">
+        <v-text-field style="flex: 0;" v-model="songTitle" label="Titel"></v-text-field>
+        <div style="position: relative; flex: 1;">
           <div class="subtitleWidthHint" :style="`width: ${subtitleWidthHint}px;`"></div>
           <v-textarea
             outlined
@@ -157,3 +157,12 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.subtitleWidthHint {
+  position: absolute;
+  height: calc(100% - 3em);
+  top: 1em;
+  border-right: 1px solid #ff0000;
+}
+</style>

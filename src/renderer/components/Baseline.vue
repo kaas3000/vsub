@@ -23,11 +23,11 @@
       </v-btn>
     </v-app-bar>
 
-    <v-content>
-      <v-container class="fill-height" fluid>
+    <v-main class="max-size-screen">
+      <v-container fluid class="h-100 pb-0">
         <router-view></router-view>
       </v-container>
-    </v-content>
+    </v-main>
     <v-footer color="primary white--text" app>
       <span>
         VMix connection:
@@ -161,6 +161,10 @@ export default {
   max-height: 100vh;
 }
 
+.max-size-screen {
+  max-height: 100vh;
+}
+
 .overflow-y {
   overflow-y: auto;
   height: 100%;
@@ -172,7 +176,8 @@ export default {
   }
 }
 
-.v-content {
-  height: 100%;
+.row,
+.container {
+  max-height: 100%;
 }
 </style>
