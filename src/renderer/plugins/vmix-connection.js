@@ -2,7 +2,6 @@ import Vue from "vue";
 import { ConnectionHTTP, ConnectionTCP } from "node-vmix";
 import Axios from "axios";
 import VmixConnectionState from "../VmixConnection/vmixConnectionState";
-import UnknownVmixConnectionStateError from "../VmixConnection/UnknownVmixConnectionStateError";
 
 // vMix connection plugin for Vue
 // Implemented with inspiration from
@@ -15,6 +14,9 @@ export class VMixConnectionPluginStore {
   pollHttpStateTimeout = null;
 
   activeInput = null;
+  hasVmixConnection = false;
+  hasTitleAvailable = false;
+  isLive = false;
 
   constructor() {
     this.storeVM = new Vue({
@@ -39,12 +41,20 @@ export class VMixConnectionPluginStore {
   /**
    * @param {string} state
    */
-  set connected(state) {
-    if (!Object.prototype.hasOwnProperty.call(VmixConnectionState, state)) {
-      throw new UnknownVmixConnectionStateError(state);
+  updateConnectionState() {
+    switch (true) {
+      case this.hasVmixConnection && this.hasTitleAvailable && this.isLive:
+        this.storeVM.$data.internal.connected = VmixConnectionState.LIVE;
+        break;
+      case this.hasVmixConnection && this.hasTitleAvailable:
+        this.storeVM.$data.internal.connected = VmixConnectionState.READY;
+        break;
+      case this.hasVmixConnection:
+        this.storeVM.$data.internal.connected = VmixConnectionState.CONNECTED;
+        break;
+      default:
+        this.storeVM.$data.internal.connected = VmixConnectionState.DISCONNECTED;
     }
-
-    this.storeVM.$data.internal.connected = state;
   }
 
   /**
@@ -65,34 +75,27 @@ export class VMixConnectionPluginStore {
      * Check title availability
      */
     this.watchXpath(`/vmix/inputs//input[@title="${this.storeVM.$data.internal.inputName}"]/@number`, (inputIndex) => {
-      const index = parseInt(inputIndex, 10);
+      if (inputIndex === "") {
+        this.hasTitleAvailable = false;
 
-      if (this.connected !== VmixConnectionState.DISCONNECTED && Number.isNaN(index)) {
-        this.connected = VmixConnectionState.CONNECTED;
-        return false;
+        return;
       }
 
+      const index = parseInt(inputIndex, 10);
+
+      this.hasTitleAvailable = true;
+
       this.storeVM.$data.internal.overlayIndex = index;
-      return true;
     });
 
     /**
      * Check live (aka, the overlay is active)
      */
     this.watchXpath(`/vmix/overlays/overlay[@number=${this.storeVM.$data.internal.overlayIndex}]`, (activeInput) => {
-      this.activeInput = parseInt(activeInput, 10);
+      this.isLive = false;
 
-      if (this.connected !== VmixConnectionState.LIVE) {
-        this.connected =
-          this.storeVM.$data.internal.overlayIndex === this.activeInput
-            ? VmixConnectionState.LIVE
-            : VmixConnectionState.READY;
-      }
-      if (
-        this.connected === VmixConnectionState.LIVE &&
-        this.storeVM.$data.internal.overlayIndex !== this.activeInput
-      ) {
-        this.connected = VmixConnectionState.READY;
+      if (this.storeVM.$data.internal.overlayIndex === parseInt(activeInput, 10)) {
+        this.isLive = true;
       }
     });
 
@@ -101,36 +104,44 @@ export class VMixConnectionPluginStore {
 
   pollHttpState() {
     this.pollHttpStateTimeout = setInterval(async () => {
-      let data;
+      let data = null;
       try {
         // eslint-disable-next-line prefer-destructuring
-        data = (await Axios.get(`http://${this.host}/api`)).data;
+        data = (
+          await Axios.get(`http://${this.host}/api`, {
+            timeout: 500,
+            timeoutErrorMessage: "Network Error",
+          })
+        ).data;
 
-        if (this.connected === VmixConnectionState.DISCONNECTED) {
-          this.connected = VmixConnectionState.CONNECTED;
-        }
+        this.hasVmixConnection = true;
       } catch (err) {
-        if (err.message === "Network Error") {
-          this.connected = VmixConnectionState.DISCONNECTED;
-          return;
+        if (err.message !== "Network Error") {
+          throw err;
         }
+
+        this.hasVmixConnection = false;
       }
 
-      Object.entries(this.xpathCallbacks).forEach(([xpath, callback]) => {
-        const xmlDocument = new DOMParser().parseFromString(data, "text/xml");
-        const xpathResult = xmlDocument.evaluate(
-          xpath,
-          xmlDocument,
-          document.createNSResolver(xmlDocument.documentElement),
-          XPathResult.STRING_TYPE,
-          null
-        );
+      if (data !== null) {
+        Object.entries(this.xpathCallbacks).forEach(([xpath, callback]) => {
+          const xmlDocument = new DOMParser().parseFromString(data, "text/xml");
+          const xpathResult = xmlDocument.evaluate(
+            xpath,
+            xmlDocument,
+            document.createNSResolver(xmlDocument.documentElement),
+            XPathResult.STRING_TYPE,
+            null
+          );
 
-        if (this.xpathPreviousValues[xpath] !== xpathResult.stringValue) {
-          callback(xpathResult.stringValue);
-        }
-        this.xpathPreviousValues[xpath] = xpathResult.stringValue;
-      });
+          if (this.xpathPreviousValues[xpath] !== xpathResult.stringValue) {
+            callback(xpathResult.stringValue);
+          }
+          this.xpathPreviousValues[xpath] = xpathResult.stringValue;
+        });
+      }
+
+      this.updateConnectionState();
     }, 500);
   }
 
