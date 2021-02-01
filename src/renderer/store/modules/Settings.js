@@ -6,8 +6,11 @@ const settingNames = {
   VMIX_OVERLAY: "vmixOverlay",
   VMIX_TITLE_FIELD_ABOVE: "vmixTitleFieldAbove",
   VMIX_TITLE_FIELD_BELOW: "vmixTitleFieldBelow",
+
   SUBTITLE_EDITOR_WIDTH_HINT: "subtitleEditorWidthHint",
   SUBTITLE_EDITOR_FONT_FAMILY: "subtitleEditorFontFamily",
+
+  FEATURE_LIVE_SUBTITLE_VIEW: "featureLiveSubtitleView",
 };
 
 const state = {
@@ -19,6 +22,8 @@ const state = {
 
   [settingNames.SUBTITLE_EDITOR_WIDTH_HINT]: 300,
   [settingNames.SUBTITLE_EDITOR_FONT_FAMILY]: "Roboto",
+
+  [settingNames.FEATURE_LIVE_SUBTITLE_VIEW]: false,
 };
 
 const mutations = {

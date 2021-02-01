@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-card class="opverflow-y" height="100%">
+    <v-card class="overflow-y" height="100%">
       <v-card-title>
         Settings
       </v-card-title>
@@ -14,6 +14,11 @@
           <v-tab>Subtitle editor</v-tab>
           <v-tab-item>
             <subtitle-editor-settings></subtitle-editor-settings>
+          </v-tab-item>
+
+          <v-tab>Experimentele features</v-tab>
+          <v-tab-item>
+            <experimental-features-settings></experimental-features-settings>
           </v-tab-item>
         </v-tabs>
       </v-card-text>
@@ -38,11 +43,13 @@
 import eventHub from "./../../EventHub";
 import VMixSettings from "./VMixSettings";
 import SubtitleEditorSettings from "./SubtitleEditorSettings";
+import ExperimentalFeaturesSettings from "./ExperimentalFeaturesSettings";
 
 export default {
   components: {
     "vmix-settings": VMixSettings,
     SubtitleEditorSettings,
+    ExperimentalFeaturesSettings,
   },
   data() {
     return {};

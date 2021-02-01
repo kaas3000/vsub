@@ -1,67 +1,66 @@
 <template>
   <v-row align="start" justify="center" class="h-100">
     <v-col class="col-4 mh-100 overflow-auto">
-      <v-container class="fill-height" fluid>
-        <span v-shortkey="['arrowup']" @shortkey="previousSubtitle()"></span>
-        <span v-shortkey="['arrowdown']" @shortkey="nextSubtitle()"></span>
-        <span v-shortkey="['pageup']" @shortkey="previousSong()"></span>
-        <span v-shortkey="['pagedown']" @shortkey="nextSong()"></span>
-        <span v-shortkey="['enter']" @shortkey="selectVisibleSongSubtitles()"></span>
+      <span v-shortkey="['pageup']" @shortkey="previousSong()"></span>
+      <span v-shortkey="['pagedown']" @shortkey="nextSong()"></span>
+      <span v-shortkey="['enter']" @shortkey="selectVisibleSongSubtitles()"></span>
 
-        <v-row>
-          <v-col>
-            <v-list nav>
-              <v-subheader>Liederen</v-subheader>
-              <v-list-item-group mandatory v-model="visibleSong" color="primary">
-                <v-list-item v-for="(song, i) in songs" :key="i" :value="song">
-                  <v-list-item-content>
-                    {{ song }}
-                  </v-list-item-content>
+      <v-list nav>
+        <v-subheader>Liederen</v-subheader>
+        <v-list-item-group mandatory v-model="visibleSong" color="primary">
+          <v-list-item v-for="(song, i) in songs" :key="i" :value="song">
+            <v-list-item-content>
+              {{ song }}
+            </v-list-item-content>
 
-                  <v-list-item-action v-if="isEditingSongList">
-                    <v-btn icon>
-                      <v-icon color="grey lighten-1" @click="editSong(song)">mdi-pencil</v-icon>
-                    </v-btn>
-                  </v-list-item-action>
-                  <v-list-item-action v-if="isEditingSongList" class="ml-0">
-                    <v-btn icon @click="$store.dispatch('removeSong', song)">
-                      <v-icon color="grey lighten-1">mdi-delete</v-icon>
-                    </v-btn>
-                  </v-list-item-action>
-                </v-list-item>
-              </v-list-item-group>
-            </v-list>
-          </v-col>
-        </v-row>
+            <v-list-item-action v-if="isEditingSongList">
+              <v-btn icon>
+                <v-icon color="grey lighten-1" @click="editSong(song)">mdi-pencil</v-icon>
+              </v-btn>
+            </v-list-item-action>
+            <v-list-item-action v-if="isEditingSongList" class="ml-0">
+              <v-btn icon @click="$store.dispatch('removeSong', song)">
+                <v-icon color="grey lighten-1">mdi-delete</v-icon>
+              </v-btn>
+            </v-list-item-action>
+          </v-list-item>
+        </v-list-item-group>
+      </v-list>
 
-        <v-row>
-          <v-col>
-            <v-btn tile text @click="isEditingSongList = !isEditingSongList">Bewerkmodus</v-btn>
-          </v-col>
-          <v-col>
-            <v-btn tile block @click="isAddingSong = true">+ Nieuw Lied</v-btn>
-            <edit-song
-              :isVisible="isAddingSong"
-              :currentlyEditingSongTitle="editSongCurrentlyEditingTitle"
-              @cancel="cancelEditSongPopup"
-            ></edit-song>
-          </v-col>
-        </v-row>
-      </v-container>
+      <v-row>
+        <v-col>
+          <v-btn tile text @click="isEditingSongList = !isEditingSongList">Bewerkmodus</v-btn>
+        </v-col>
+        <v-col>
+          <v-btn tile block @click="isAddingSong = true">+ Nieuw Lied</v-btn>
+          <edit-song
+            :isVisible="isAddingSong"
+            :currentlyEditingSongTitle="editSongCurrentlyEditingTitle"
+            @cancel="cancelEditSongPopup"
+          ></edit-song>
+        </v-col>
+      </v-row>
     </v-col>
 
-    <not-presenting-subtitle-list></not-presenting-subtitle-list>
+    <v-col class="col-8 mh-100 overflow-auto">
+      <live-subtitle-list v-if="isLive && isEnabledFeatureLiveSubtitleView"></live-subtitle-list>
+      <not-live-subtitle-list v-else></not-live-subtitle-list>
+    </v-col>
   </v-row>
 </template>
 
 <script>
 import EditSong from "./sidebar/EditSong";
-import NotPresentingSubtitleList from "./subtitleList/NotPresentingSubtitleList";
+import LiveSubtitleList from "./subtitleList/LiveSubtitleList";
+import NotLiveSubtitleList from "./subtitleList/NotLiveSubtitleList";
+import VmixConnectionState from "../vmixConnection/VmixConnectionState";
+import { settingNames } from "../store/modules/Settings";
 
 export default {
   components: {
     EditSong,
-    NotPresentingSubtitleList,
+    LiveSubtitleList,
+    NotLiveSubtitleList,
   },
   data: () => ({
     editSongCurrentlyEditingTitle: null,
@@ -90,6 +89,14 @@ export default {
 
     subtitles() {
       return this.getSubtitles(this.songData);
+    },
+
+    isLive() {
+      return this.$vMixConnection.connected === VmixConnectionState.LIVE;
+    },
+
+    isEnabledFeatureLiveSubtitleView() {
+      return this.$store.state.Settings[settingNames.FEATURE_LIVE_SUBTITLE_VIEW];
     },
   },
   methods: {

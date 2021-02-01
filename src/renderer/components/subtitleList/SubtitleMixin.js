@@ -29,6 +29,55 @@ export default {
         },
       ]);
     },
+
+    setActiveSubtitle(i) {
+      this.$store.dispatch("setActiveSubtitle", {
+        songTitle: this.$store.getters.songData.title,
+        index: i,
+      });
+    },
+
+    handleSubtitleSelected(above, below, index) {
+      this.sendSubtitlesToVMix(above, below);
+      this.setActiveSubtitle(index);
+    },
+
+    isActiveSubtitle(i) {
+      if (this.activeSubtitle === null) {
+        return false;
+      }
+
+      const { songTitle, index } = this.activeSubtitle;
+
+      const isActiveSongTitle = this.$store.getters.songData.title === songTitle;
+      const isActiveIndex = index === i;
+
+      return isActiveSongTitle && isActiveIndex;
+    },
+
+    nextSubtitle() {
+      let n = 0;
+
+      if (this.activeSubtitle !== null) {
+        n = Math.min(this.activeSubtitle.index + 1, this.subtitles.length);
+      }
+
+      const { above, below } = this.subtitles[n];
+
+      this.handleSubtitleSelected(above, below, n);
+    },
+
+    previousSubtitle() {
+      let n = 0;
+
+      if (this.activeSubtitle !== null) {
+        n = Math.max(this.activeSubtitle.index - 1, 0);
+      }
+
+      const { above, below } = this.subtitles[n];
+
+      this.handleSubtitleSelected(above, below, n);
+    },
   },
 
   computed: {
@@ -38,6 +87,10 @@ export default {
 
     isLive() {
       return this.$vMixConnection.connected === VmixConnnectionState.LIVE;
+    },
+
+    activeSubtitle() {
+      return this.$store.state.Songs.activeSubtitle;
     },
   },
 };

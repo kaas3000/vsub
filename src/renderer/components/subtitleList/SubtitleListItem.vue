@@ -1,5 +1,5 @@
 <template>
-  <v-list-item @click="selectSubtitle">
+  <v-list-item @click="selectSubtitle" :class="active ? 'active' : ''">
     <v-list-item-content>
       <v-list-item-title v-text="above || '\xa0'"></v-list-item-title>
       <v-list-item-title v-text="below || '\xa0'"></v-list-item-title>
@@ -18,6 +18,10 @@ export default {
       type: String,
       default: "",
     },
+    active: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   computed: {
@@ -33,3 +37,9 @@ export default {
   },
 };
 </script>
+
+<style lang="css" scoped>
+.active {
+  background-color: #dadada;
+}
+</style>

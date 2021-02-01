@@ -2,24 +2,15 @@ import Vue from "vue";
 
 const state = {
   vmixAddress: null,
-  active: null,
 
   visibleSong: "Psalm 1",
+  activeSubtitle: null,
   songs: {},
 };
 
 const mutations = {
-  SET_ACTIVE(state, { songTitle, regelIndex }) {
-    state.songs[state.active.songTitle].regels[state.active.regelIndex] = false;
-
-    state.songs[songTitle].regels[regelIndex].active = true;
-
-    if (state.active) {
-      state.active = {
-        songTitle,
-        regelIndex,
-      };
-    }
+  SET_ACTIVE_SUBTITLE(state, { songTitle, index }) {
+    state.activeSubtitle = { songTitle, index };
   },
 
   ADD_SONG(state, { title, subtitles = [] }) {
@@ -57,19 +48,6 @@ const mutations = {
   SET_VISIBLE_SONG(state, title) {
     Vue.set(state, "visibleSong", title);
   },
-
-  SELECT_SUBTITLE(state, i) {
-    Object.values(state.songs).forEach((song) => {
-      song.regels.forEach((regel) => {
-        if (regel.active) {
-          Vue.set(regel, "active", false);
-        }
-      });
-    });
-
-    const visibleSong = state.songs[state.visibleSong];
-    Vue.set(visibleSong.regels[i], "active", true);
-  },
 };
 
 const actions = {
@@ -98,15 +76,25 @@ const actions = {
     commit("SET_VISIBLE_SONG", title);
   },
 
-  selectSubtitle({ commit }, i) {
-    commit("SELECT_SUBTITLE", i);
+  setActiveSubtitle({ commit }, { songTitle, index }) {
+    commit("SET_ACTIVE_SUBTITLE", { songTitle, index });
   },
 };
 
 const getters = {
   songTitles: (state) => Object.keys(state.songs),
 
-  songData: (state) => state.songs[state.visibleSong],
+  songData: (state) => {
+    const emptySubtitle = {
+      above: "",
+      below: "",
+    };
+    const visibleSongData = { ...state.songs[state.visibleSong] };
+
+    visibleSongData.subtitles = [emptySubtitle, ...visibleSongData.subtitles, emptySubtitle];
+
+    return visibleSongData;
+  },
 
   selectedSong: (state) => {
     return Object.values(state.songs).find((song) => {
