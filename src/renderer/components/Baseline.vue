@@ -103,13 +103,13 @@ export default {
       this.isLiveTransitioning = false;
     },
 
-    "$store.state.Settings.vmixHost": function () {
+    "$store.state.Settings.vmixHost": function reconnect() {
       this.connectToVMix();
     },
-    "$store.state.Settings.vmixInputName": function () {
+    "$store.state.Settings.vmixInputName": function reconnect() {
       this.connectToVMix();
     },
-    "$store.state.Settings.vmixOverlay": function () {
+    "$store.state.Settings.vmixOverlay": function reconnect() {
       this.connectToVMix();
     },
   },

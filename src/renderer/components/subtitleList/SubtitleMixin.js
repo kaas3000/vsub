@@ -86,7 +86,6 @@ export default {
     },
 
     presentedSubtitles() {
-      console.log(this.subtitles.slice(0, Math.max(this.activeSubtitleIndex - 1, 0)));
       return this.subtitles.slice(0, this.activeSubtitleIndex);
     },
 
