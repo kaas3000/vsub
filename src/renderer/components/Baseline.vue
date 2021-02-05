@@ -102,6 +102,16 @@ export default {
     isLive: function isLiveWatcher() {
       this.isLiveTransitioning = false;
     },
+
+    "$store.state.Settings.vmixHost": function () {
+      this.connectToVMix();
+    },
+    "$store.state.Settings.vmixInputName": function () {
+      this.connectToVMix();
+    },
+    "$store.state.Settings.vmixOverlay": function () {
+      this.connectToVMix();
+    },
   },
 
   methods: {
@@ -145,17 +155,21 @@ export default {
       const data = JSON.stringify(this.$store.state.Songs.songs);
       fs.writeFileSync(location, data, { encoding: "utf8" });
     },
+
+    connectToVMix() {
+      this.setVmixConnection(
+        this.$store.state.Settings.vmixHost,
+        this.$store.state.Settings.vmixInputName,
+        this.$store.state.Settings.vmixOverlay,
+        {
+          autoReconnect: false,
+        }
+      );
+    },
   },
 
   mounted() {
-    this.setVmixConnection(
-      this.$store.state.Settings.vmixHost,
-      this.$store.state.Settings.vmixInputName,
-      this.$store.state.Settings.vmixOverlay,
-      {
-        autoReconnect: false,
-      }
-    );
+    this.connectToVMix();
   },
 };
 </script>

@@ -70,6 +70,9 @@ export class VMixConnectionPluginStore {
    * @param {Number} overlayIndex
    */
   async connect(host, inputName, overlayIndex) {
+    // A setInterval might already be running
+    clearInterval(this.pollHttpStateTimeout);
+
     this.host = host;
 
     this.storeVM.$data.internal.inputName = inputName;
