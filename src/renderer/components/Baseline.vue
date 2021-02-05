@@ -1,6 +1,6 @@
 <template>
   <v-app id="inspire">
-    <v-app-bar app :color="accentColor" dark>
+    <v-app-bar app :color="accentColor" dark clipped-left>
       <v-toolbar-title>GKV Lied Ondertiteling</v-toolbar-title>
 
       <v-spacer></v-spacer>
@@ -15,7 +15,7 @@
         @click="isLive ? disableLive() : enableLive()"
         ref="toggleLiveButton"
         :loading="isLiveTransitioning"
-        :disabled="!vmixConnectionState"
+        :disabled="!(isReadyForLive || isLive)"
         v-shortkey="['space']"
         @shortkey="vmixConnectionState && (isLive ? disableLive() : enableLive())"
       >
@@ -87,6 +87,10 @@ export default {
       }
 
       return "red";
+    },
+
+    isReadyForLive() {
+      return this.vmixConnectionState === VmixConnnectionState.READY;
     },
 
     isLive() {

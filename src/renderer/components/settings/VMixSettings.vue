@@ -64,8 +64,8 @@
 
 <script>
 import axios from "axios";
-import eventHub from "./../../EventHub";
-import { settingNames } from "./../../store/modules/Settings";
+import eventHub from "../../EventHub";
+import { settingNames } from "../../store/modules/Settings";
 
 export default {
   data() {

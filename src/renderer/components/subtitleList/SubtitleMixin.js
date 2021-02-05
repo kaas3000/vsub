@@ -85,12 +85,29 @@ export default {
       return this.$store.getters.songData.subtitles;
     },
 
+    presentedSubtitles() {
+      console.log(this.subtitles.slice(0, Math.max(this.activeSubtitleIndex - 1, 0)));
+      return this.subtitles.slice(0, this.activeSubtitleIndex);
+    },
+
+    presentingSubtitle() {
+      return this.subtitles[this.activeSubtitleIndex];
+    },
+
+    upcomingSubtitles() {
+      return this.subtitles.slice(this.activeSubtitleIndex + 1);
+    },
+
     isLive() {
       return this.$vMixConnection.connected === VmixConnnectionState.LIVE;
     },
 
     activeSubtitle() {
       return this.$store.state.Songs.activeSubtitle;
+    },
+
+    activeSubtitleIndex() {
+      return this.activeSubtitle?.index ?? 0;
     },
   },
 };

@@ -1,8 +1,18 @@
 <template>
   <v-list-item @click="selectSubtitle" :class="active ? 'active' : ''">
+    <v-list-item-icon>
+      <v-icon v-if="active">mdi-arrow-right</v-icon>
+    </v-list-item-icon>
     <v-list-item-content>
-      <v-list-item-title v-text="above || '\xa0'"></v-list-item-title>
-      <v-list-item-title v-text="below || '\xa0'"></v-list-item-title>
+      <div
+        v-for="(line, i) in lines"
+        :key="i"
+        :class="{
+          ['empty-line']: line === '',
+        }"
+      >
+        {{ line || placeholder }}
+      </div>
     </v-list-item-content>
   </v-list-item>
 </template>
@@ -22,11 +32,15 @@ export default {
       type: Boolean,
       default: false,
     },
+    placeholder: {
+      type: String,
+      default: "\xa0",
+    },
   },
 
   computed: {
     lines() {
-      return [this.above];
+      return [this.above, this.below];
     },
   },
 
@@ -41,5 +55,10 @@ export default {
 <style lang="css" scoped>
 .active {
   background-color: #dadada;
+}
+
+.empty-line {
+  font-style: italic;
+  opacity: 0.4;
 }
 </style>

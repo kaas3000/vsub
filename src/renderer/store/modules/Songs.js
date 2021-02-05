@@ -96,11 +96,7 @@ const getters = {
     return visibleSongData;
   },
 
-  selectedSong: (state) => {
-    return Object.values(state.songs).find((song) => {
-      return song.regels.find((regel) => regel.active === true);
-    });
-  },
+  selectedSong: (state) => Object.values(state.songs).find((song) => song.regels.find((regel) => regel.active === true)),
 
   songJson: (state, getters) => {
     const { selectedSong } = getters;

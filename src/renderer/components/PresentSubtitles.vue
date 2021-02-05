@@ -1,6 +1,6 @@
 <template>
   <v-row align="start" justify="center" class="h-100">
-    <v-col class="col-4 mh-100 overflow-auto">
+    <v-navigation-drawer permanent :width="350" app clipped>
       <span v-shortkey="['pageup']" @shortkey="previousSong()"></span>
       <span v-shortkey="['pagedown']" @shortkey="nextSong()"></span>
       <span v-shortkey="['enter']" @shortkey="selectVisibleSongSubtitles()"></span>
@@ -27,22 +27,24 @@
         </v-list-item-group>
       </v-list>
 
-      <v-row>
-        <v-col>
-          <v-btn tile text @click="isEditingSongList = !isEditingSongList">Bewerkmodus</v-btn>
-        </v-col>
-        <v-col>
-          <v-btn tile block @click="isAddingSong = true">+ Nieuw Lied</v-btn>
-          <edit-song
-            :isVisible="isAddingSong"
-            :currentlyEditingSongTitle="editSongCurrentlyEditingTitle"
-            @cancel="cancelEditSongPopup"
-          ></edit-song>
-        </v-col>
-      </v-row>
-    </v-col>
+      <v-container>
+        <v-row>
+          <v-col>
+            <v-btn tile text @click="isEditingSongList = !isEditingSongList">Bewerkmodus</v-btn>
+          </v-col>
+          <v-col>
+            <v-btn tile block @click="isAddingSong = true">+ Nieuw Lied</v-btn>
+            <edit-song
+              :isVisible="isAddingSong"
+              :currentlyEditingSongTitle="editSongCurrentlyEditingTitle"
+              @cancel="cancelEditSongPopup"
+            ></edit-song>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-navigation-drawer>
 
-    <v-col class="col-8 mh-100 overflow-auto">
+    <v-col class="h-100">
       <live-subtitle-list v-if="isLive && isEnabledFeatureLiveSubtitleView"></live-subtitle-list>
       <not-live-subtitle-list v-else></not-live-subtitle-list>
     </v-col>

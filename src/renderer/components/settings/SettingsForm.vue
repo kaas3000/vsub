@@ -40,7 +40,7 @@
 </template>
 
 <script>
-import eventHub from "./../../EventHub";
+import eventHub from "../../EventHub";
 import VMixSettings from "./VMixSettings";
 import SubtitleEditorSettings from "./SubtitleEditorSettings";
 import ExperimentalFeaturesSettings from "./ExperimentalFeaturesSettings";

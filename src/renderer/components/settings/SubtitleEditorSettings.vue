@@ -15,8 +15,8 @@
 </template>
 
 <script>
-import eventHub from "./../../EventHub";
-import { settingNames } from "./../../store/modules/Settings";
+import eventHub from "../../EventHub";
+import { settingNames } from "../../store/modules/Settings";
 
 export default {
   data() {

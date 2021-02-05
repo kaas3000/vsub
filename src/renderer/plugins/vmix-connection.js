@@ -9,13 +9,19 @@ import VmixConnectionState from "../VmixConnection/vmixConnectionState";
 //  - https://codepen.io/stigaard/pen/yLNNQbg
 export class VMixConnectionPluginStore {
   host = null;
+
   xpathPreviousValues = {};
+
   xpathCallbacks = {};
+
   pollHttpStateTimeout = null;
 
   activeInput = null;
+
   hasVmixConnection = false;
+
   hasTitleAvailable = false;
+
   isLive = false;
 
   constructor() {
@@ -30,6 +36,7 @@ export class VMixConnectionPluginStore {
       },
     });
   }
+
   get connection() {
     return this.storeVM.$data.internal.connection;
   }
@@ -178,6 +185,7 @@ export class VMixConnectionPluginStore {
 
     return Promise.resolve([]);
   }
+
   on(type, cb) {
     this.storeVM.$data.internal.connection.on(type, cb);
   }

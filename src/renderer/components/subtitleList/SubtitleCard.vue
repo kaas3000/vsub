@@ -1,11 +1,14 @@
 <template>
-  <v-card @click="selectSubtitle" width="100%" class="mx-1" outlined>
-    <v-card-text class="headline text-center">
-      <template v-for="(line, i) in lines">
-        <div :key="i">{{ line || "\xa0" }}</div>
-      </template>
-    </v-card-text>
-  </v-card>
+  <div class="subtitle-card headline text-center d-flex flex-column align-stretch">
+    <div
+      v-for="(line, i) in lines"
+      :key="i"
+      class="subtitle-line py-3 mb-1"
+      :style="`font-family: ${subtitleFontFamily};`"
+    >
+      {{ line || "\xa0" }}
+    </div>
+  </div>
 </template>
 
 <script>
@@ -25,6 +28,10 @@ export default {
     lines() {
       return [this.above, this.below];
     },
+
+    subtitleFontFamily() {
+      return this.$store.state.Settings.subtitleEditorFontFamily;
+    },
   },
 
   methods: {
@@ -34,3 +41,21 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.subtitle-line {
+  position: relative;
+  white-space: nowrap;
+}
+
+.subtitle-line::before {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  left: 0;
+  top: 0;
+  content: "";
+  background: currentColor;
+  opacity: 0.2;
+}
+</style>

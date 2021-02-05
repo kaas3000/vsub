@@ -1,20 +1,22 @@
 <template>
-  <v-list>
+  <v-list class="h-100">
     <span v-shortkey="['arrowup']" @shortkey="previousSubtitle()"></span>
     <span v-shortkey="['arrowdown']" @shortkey="nextSubtitle()"></span>
 
     <v-subheader>Ondertitels</v-subheader>
     <v-divider></v-divider>
-    <template v-for="({ above, below }, i) in subtitles">
-      <subtitle-list-item
-        :above="above"
-        :below="below"
-        :active="isActiveSubtitle(i)"
-        :key="'subtitle-item-' + i"
-        @subtitle-selected="handleSubtitleSelected(above, below, i)"
-      ></subtitle-list-item>
-      <v-divider :key="'divider-' + i"></v-divider>
-    </template>
+    <div class="overflow-y" ref="scrollContainer">
+      <template v-for="({ above, below }, i) in subtitles">
+        <subtitle-list-item
+          :above="above"
+          :below="below"
+          :active="isActiveSubtitle(i)"
+          :key="'subtitle-item-' + i"
+          @subtitle-selected="handleSubtitleSelected(above, below, i)"
+        ></subtitle-list-item>
+        <v-divider :key="'divider-' + i"></v-divider>
+      </template>
+    </div>
   </v-list>
 </template>
 
@@ -22,6 +24,7 @@
 import SubtitleMixin from "./SubtitleMixin";
 import SubtitleListItem from "./SubtitleListItem";
 import SubtitleCard from "./SubtitleCard.vue";
+import { settingNames } from "../../store/modules/Settings";
 
 export default {
   components: {
@@ -29,8 +32,28 @@ export default {
     SubtitleCard,
   },
 
-  methods: {},
+  methods: {
+    scrollToActiveElement() {
+      const scrollOffset = 252;
+      const activeElement = this.$refs.scrollContainer.querySelector(".active");
+      const activeLocation = activeElement.offsetTop;
+
+      this.$refs.scrollContainer.scrollTop = activeLocation - scrollOffset;
+    },
+  },
+
+  computed: {
+    isEnabledFeatureKeepActiveSubtitleVisible() {
+      return this.$store.state.Settings[settingNames.FEATURE_KEEP_ACTIVE_SUBTITLE_VISIBLE];
+    },
+  },
 
   mixins: [SubtitleMixin],
+
+  updated() {
+    if (this.isEnabledFeatureKeepActiveSubtitleVisible) {
+      this.scrollToActiveElement();
+    }
+  },
 };
 </script>
