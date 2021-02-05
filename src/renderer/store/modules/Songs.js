@@ -82,7 +82,12 @@ const actions = {
 };
 
 const getters = {
-  songTitles: (state) => Object.keys(state.songs),
+  songTitles: (state) => {
+    const songTitles = Object.keys(state.songs);
+    const sortedSongTitles = songTitles.sort((a, b) => a.localeCompare(b));
+
+    return sortedSongTitles;
+  },
 
   songData: (state) => {
     const emptySubtitle = {
@@ -96,7 +101,8 @@ const getters = {
     return visibleSongData;
   },
 
-  selectedSong: (state) => Object.values(state.songs).find((song) => song.regels.find((regel) => regel.active === true)),
+  selectedSong: (state) =>
+    Object.values(state.songs).find((song) => song.regels.find((regel) => regel.active === true)),
 
   songJson: (state, getters) => {
     const { selectedSong } = getters;
