@@ -76,9 +76,6 @@ export default {
     songs() {
       return this.$store.getters.songTitles;
     },
-    songData() {
-      return this.$store.getters.songData;
-    },
 
     visibleSong: {
       get() {
@@ -87,10 +84,6 @@ export default {
       set(title) {
         return this.$store.dispatch("setVisibleSong", title);
       },
-    },
-
-    subtitles() {
-      return this.getSubtitles(this.songData);
     },
 
     isLive() {
@@ -102,13 +95,6 @@ export default {
     },
   },
   methods: {
-    getSubtitles(songData) {
-      if (songData) {
-        return songData.subtitles;
-      }
-      return [];
-    },
-
     cancelEditSongPopup() {
       this.isAddingSong = false;
       this.editSongCurrentlyEditingTitle = null;
@@ -117,59 +103,6 @@ export default {
     editSong(title) {
       this.editSongCurrentlyEditingTitle = title;
       this.isAddingSong = true;
-    },
-
-    previousSubtitle() {
-      const [song = this.visibleSong, index = 0] = this.selectedSubtitle;
-      const subtitles = this.getSubtitles(this.$store.state.Songs.songs[song]);
-
-      let newIndex = index - 1;
-      if (subtitles[newIndex] === null) {
-        newIndex -= 1;
-      }
-      if (newIndex < 0) {
-        this.selectedSubtitle = [];
-        this.setSubtitles("", "");
-      } else {
-        this.selectedSubtitle = [song, newIndex];
-        const newSubtitles = subtitles[newIndex];
-        this.setSubtitles(newSubtitles.above, newSubtitles.below);
-      }
-
-      this.$refs.activeSubtitle[0].$el.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    },
-    nextSubtitle() {
-      const [song = this.visibleSong, index = -1] = this.selectedSubtitle;
-      const subtitles = this.getSubtitles(this.$store.state.Songs.songs[song]);
-
-      // Start with simply increasing the index
-      let newIndex = index + 1;
-      // Don't increase when the last subtitle is selected
-      if (newIndex > subtitles.length - 1) {
-        newIndex = subtitles.length - 1;
-      }
-      // null-subtitles are rendered as a line (to seperate verses)
-      if (subtitles[newIndex] === null) {
-        newIndex += 1;
-      }
-
-      this.selectedSubtitle = [song, newIndex];
-
-      const newSubtitles = subtitles[newIndex];
-      this.setSubtitles(newSubtitles.above, newSubtitles.below);
-
-      this.$refs.activeSubtitle[0].$el.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-    },
-
-    selectVisibleSongSubtitles() {
-      this.selectedSubtitle = [];
-      this.setSubtitles("", "");
     },
 
     nextSong() {

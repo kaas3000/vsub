@@ -100,20 +100,6 @@ const getters = {
 
     return visibleSongData;
   },
-
-  selectedSong: (state) =>
-    Object.values(state.songs).find((song) => song.regels.find((regel) => regel.active === true)),
-
-  songJson: (state, getters) => {
-    const { selectedSong } = getters;
-    if (selectedSong) {
-      return selectedSong.regels.map(({ boven, onder }) => ({
-        boven,
-        onder,
-      }));
-    }
-    return [];
-  },
 };
 
 export default {

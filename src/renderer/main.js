@@ -1,6 +1,5 @@
 import Vue from "vue";
 import axios from "axios";
-import { ipcRenderer } from "electron";
 
 import Vuetify from "vuetify";
 import "@mdi/font/css/materialdesignicons.min.css";
@@ -10,9 +9,7 @@ import VueShortKey from "vue-shortkey";
 import App from "./App";
 import router from "./router";
 import store from "./store";
-import vMixConnectionPlugin, {
-  VMixConnectionPluginStore,
-} from "./plugins/vmix-connection";
+import vMixConnectionPlugin, { VMixConnectionPluginStore } from "./plugins/vmix-connection";
 
 Vue.use(Vuetify);
 Vue.use(vMixConnectionPlugin, new VMixConnectionPluginStore());
@@ -30,7 +27,3 @@ new Vue({
   template: "<App/>",
   vuetify: new Vuetify({}),
 }).$mount("#app");
-
-ipcRenderer.on("song-subtitles-req", () => {
-  ipcRenderer.send("song-subtitles-resp", store.getters.songJson);
-});
