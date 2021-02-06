@@ -130,7 +130,7 @@ export default {
     subtitleObjectsToSongText(subtitles) {
       return subtitles
         .filter(({ type }) => type === "subtitle")
-        .map(({ above, below }) => `${above}\n${below}`)
+        .map(({ above, below }) => `${above.trim()}\n${below.trim()}`)
         .join("\n")
         .trim();
     },
