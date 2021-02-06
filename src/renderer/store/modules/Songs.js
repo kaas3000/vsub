@@ -94,6 +94,11 @@ const getters = {
       above: "",
       below: "",
     };
+
+    if (!Object.prototype.hasOwnProperty.call(state.songs, state.visibleSong)) {
+      return null;
+    }
+
     const visibleSongData = { ...state.songs[state.visibleSong] };
 
     visibleSongData.subtitles = [emptySubtitle, ...visibleSongData.subtitles, emptySubtitle];

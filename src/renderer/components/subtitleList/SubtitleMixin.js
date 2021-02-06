@@ -59,7 +59,7 @@ export default {
       let n = 0;
 
       if (this.activeSubtitle !== null) {
-        n = Math.min(this.activeSubtitle.index + 1, this.subtitles.length);
+        n = Math.min(this.activeSubtitle.index + 1, this.subtitles.length - 1);
       }
 
       const { above, below } = this.subtitles[n];
@@ -82,7 +82,7 @@ export default {
 
   computed: {
     subtitles() {
-      return this.$store.getters.songData.subtitles;
+      return this.$store.getters.songData?.subtitles;
     },
 
     presentedSubtitles() {

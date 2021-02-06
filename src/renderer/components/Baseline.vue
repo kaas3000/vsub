@@ -135,21 +135,25 @@ export default {
       const fs = require("fs");
       const { dialog } = require("electron").remote;
 
-      const [location] = dialog.showOpenDialog({
+      const dialogResult = dialog.showOpenDialogSync({
         properties: ["openFile"],
         filters: [{ name: "Liturgie (*.json)", extensions: ["json"] }],
       });
 
-      const data = fs.readFileSync(location, { encoding: "utf8" });
+      const [location] = dialogResult ?? [null];
 
-      this.$store.dispatch("loadSongs", JSON.parse(data));
+      if (location !== null) {
+        const data = fs.readFileSync(location, { encoding: "utf8" });
+
+        this.$store.dispatch("loadSongs", JSON.parse(data));
+      }
     },
 
     save() {
       const fs = require("fs");
       const { dialog } = require("electron").remote;
 
-      const location = dialog.showSaveDialog({
+      const location = dialog.showSaveDialogSync({
         filters: [{ name: "Liturgie (*.json)", extensions: ["json"] }],
       });
       const data = JSON.stringify(this.$store.state.Songs.songs);
