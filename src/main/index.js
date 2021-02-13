@@ -1,4 +1,6 @@
-import { app, BrowserWindow } from "electron"; // eslint-disable-line
+import { app, BrowserWindow } from "electron";
+
+import Store from "electron-store";
 
 /**
  * Set `__static` path to static files in production
@@ -7,6 +9,8 @@ import { app, BrowserWindow } from "electron"; // eslint-disable-line
 if (process.env.NODE_ENV !== "development") {
   global.__static = require("path").join(__dirname, "/static").replace(/\\/g, "\\\\"); // eslint-disable-line
 }
+
+Store.initRenderer();
 
 let mainWindow;
 const winURL = process.env.NODE_ENV === "development" ? "http://localhost:9080" : `file://${__dirname}/index.html`;
