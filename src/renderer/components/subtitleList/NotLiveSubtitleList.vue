@@ -36,9 +36,11 @@ export default {
     scrollToActiveElement() {
       const scrollOffset = 252;
       const activeElement = this.$refs.scrollContainer.querySelector(".active");
-      const activeLocation = activeElement.offsetTop;
+      const activeLocation = activeElement?.offsetTop ?? null;
 
-      this.$refs.scrollContainer.scrollTop = activeLocation - scrollOffset;
+      if (activeLocation !== null) {
+        this.$refs.scrollContainer.scrollTop = activeLocation - scrollOffset;
+      }
     },
   },
 
@@ -51,7 +53,7 @@ export default {
   mixins: [SubtitleMixin],
 
   updated() {
-    if (this.isEnabledFeatureKeepActiveSubtitleVisible) {
+    if (this.isEnabledFeatureKeepActiveSubtitleVisible && (this.subtitles ?? null) !== null) {
       this.scrollToActiveElement();
     }
   },

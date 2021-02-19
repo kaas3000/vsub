@@ -1,7 +1,7 @@
 import Vue from "vue";
 import { ConnectionHTTP, ConnectionTCP } from "node-vmix";
 import Axios from "axios";
-import VmixConnectionState from "../VmixConnection/vmixConnectionState";
+import VmixConnectionState from "../vmixConnection/vmixConnectionState";
 
 // vMix connection plugin for Vue
 // Implemented with inspiration from

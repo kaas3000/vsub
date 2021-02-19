@@ -1,13 +1,22 @@
 <template>
   <v-app id="inspire">
-    <v-app-bar app :color="accentColor" dark clipped-left>
+    <v-app-bar app :color="accentColor" dark clipped-left collapse-on-scroll>
       <v-toolbar-title>GKV Lied Ondertiteling</v-toolbar-title>
 
       <v-spacer></v-spacer>
 
-      <v-btn icon @click="save"><v-icon>mdi-content-save</v-icon></v-btn>
-      <v-btn icon @click="open"><v-icon>mdi-folder-open</v-icon></v-btn>
-      <v-btn icon to="/settings"><v-icon>mdi-cog</v-icon></v-btn>
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+          <v-badge offset-x="18" offset-y="18" :value="hasUnsavedChanges" overlap dot>
+            <v-btn icon @click="save" :disabled="isLive" v-bind="attrs" v-on="on"
+              ><v-icon>mdi-content-save</v-icon></v-btn
+            >
+          </v-badge>
+        </template>
+        <span>Er zijn niet opgeslagen wijzigingen</span>
+      </v-tooltip>
+      <v-btn icon @click="open" :disabled="isLive"><v-icon>mdi-folder-open</v-icon></v-btn>
+      <v-btn icon to="/settings" :disabled="isLive"><v-icon>mdi-cog</v-icon></v-btn>
       <div class="mx-4"></div>
 
       <v-btn
@@ -33,24 +42,25 @@
         VMix connection:
         <v-badge dot inline :color="vmixConnectionColor"></v-badge>
       </span>
+
+      <span><v-icon small color="white">mdi-file-document</v-icon> {{ currentFile || "Nieuw bestand" }}</span>
     </v-footer>
   </v-app>
 </template>
 
 <script>
 import VmixConnnectionState from "@/vmixConnection/VmixConnectionState";
-// eslint-disable-next-line no-unused-vars
-import { ConnectionTCP, ConnectionHTTP } from "node-vmix";
-const ip = require("ip");
+import SaveSongMixin from "./SaveSongMixin";
 
 export default {
   props: {
     source: String,
   },
 
+  mixins: [SaveSongMixin],
+
   data: () => ({
     drawer: null,
-    ip: ip.address(),
 
     isLiveTransitioning: false,
 
@@ -131,35 +141,6 @@ export default {
       });
     },
 
-    open() {
-      const fs = require("fs");
-      const { dialog } = require("electron").remote;
-
-      const dialogResult = dialog.showOpenDialogSync({
-        properties: ["openFile"],
-        filters: [{ name: "Liturgie (*.json)", extensions: ["json"] }],
-      });
-
-      const [location] = dialogResult ?? [null];
-
-      if (location !== null) {
-        const data = fs.readFileSync(location, { encoding: "utf8" });
-
-        this.$store.dispatch("loadSongs", JSON.parse(data));
-      }
-    },
-
-    save() {
-      const fs = require("fs");
-      const { dialog } = require("electron").remote;
-
-      const location = dialog.showSaveDialogSync({
-        filters: [{ name: "Liturgie (*.json)", extensions: ["json"] }],
-      });
-      const data = JSON.stringify(this.$store.state.Songs.songs);
-      fs.writeFileSync(location, data, { encoding: "utf8" });
-    },
-
     connectToVMix() {
       this.setVmixConnection(
         this.$store.state.Settings.vmixHost,
@@ -192,14 +173,18 @@ export default {
   height: 100%;
 }
 
-.v-card {
-  &.active::before {
-    opacity: 0.08;
-  }
-}
-
 .row,
 .container {
   max-height: 100%;
+}
+
+.v-footer {
+  justify-content: space-between;
+  font-size: 0.875em;
+}
+
+header,
+footer {
+  user-select: none;
 }
 </style>

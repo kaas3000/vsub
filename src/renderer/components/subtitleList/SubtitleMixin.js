@@ -37,6 +37,18 @@ export default {
       });
     },
 
+    sendActiveSubtitleToVMix() {
+      if ((this.activeSubtitle ?? null) !== null) {
+        const { songTitle, index } = this.activeSubtitle;
+        const isActiveSongTitle = this.$store.getters.songData?.title === songTitle;
+
+        if (isActiveSongTitle) {
+          const { above, below } = this.subtitles[index];
+          this.sendSubtitlesToVMix(above, below);
+        }
+      }
+    },
+
     handleSubtitleSelected(above, below, index) {
       this.sendSubtitlesToVMix(above, below);
       this.setActiveSubtitle(index);
@@ -107,6 +119,12 @@ export default {
 
     activeSubtitleIndex() {
       return this.activeSubtitle?.index ?? 0;
+    },
+  },
+
+  watch: {
+    activeSubtitle: function activeSubtitle() {
+      this.sendActiveSubtitleToVMix();
     },
   },
 };

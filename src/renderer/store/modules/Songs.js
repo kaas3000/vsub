@@ -1,11 +1,20 @@
 import Vue from "vue";
 
-const state = {
-  vmixAddress: null,
+/**
+ * @param {String[]} titles
+ * @returns {String[]}
+ */
+function sortSongTitles(titles) {
+  return titles.sort((a, b) => a.localeCompare(b));
+}
 
+const state = {
   visibleSong: "Psalm 1",
   activeSubtitle: null,
   songs: {},
+
+  hasChangedSinceLastSave: false,
+  currentFile: null,
 };
 
 const mutations = {
@@ -18,6 +27,8 @@ const mutations = {
       title,
       subtitles,
     });
+
+    state.hasChangedSinceLastSave = true;
   },
 
   UPDATE_SONG(state, { oldTitle, title, subtitles }) {
@@ -31,10 +42,13 @@ const mutations = {
     });
 
     Vue.set(state, "visibleSong", title);
+    state.hasChangedSinceLastSave = true;
   },
 
   REMOVE_SONG(state, title) {
     Vue.delete(state.songs, title);
+
+    state.hasChangedSinceLastSave = true;
   },
 
   CLEAR_ALL_SONGS(state) {
@@ -43,16 +57,30 @@ const mutations = {
 
   LOAD_SONGS(state, songs) {
     Vue.set(state, "songs", songs);
+    const firstSongTitle = sortSongTitles(Object.keys(songs))[0];
+    Vue.set(state, "activeSubtitle", {
+      songTitle: firstSongTitle,
+      index: 0,
+    });
+
+    Vue.set(state, "hasChangedSinceLastSave", false);
   },
 
   SET_VISIBLE_SONG(state, title) {
     Vue.set(state, "visibleSong", title);
   },
+
+  SET_CHANGED_SINCE_LAST_SAVE(state, hasChanged) {
+    state.hasChangedSinceLastSave = hasChanged;
+  },
+
+  SET_CURRENT_FILE(state, fileName) {
+    Vue.set(state, "currentFile", fileName);
+  },
 };
 
 const actions = {
   addSong(store, args) {
-    // do something async
     store.commit("ADD_SONG", args);
   },
 
@@ -79,12 +107,20 @@ const actions = {
   setActiveSubtitle({ commit }, { songTitle, index }) {
     commit("SET_ACTIVE_SUBTITLE", { songTitle, index });
   },
+
+  setChangedSinceLastSave({ commit }, hasChanged) {
+    commit("SET_CHANGED_SINCE_LAST_SAVE", hasChanged);
+  },
+
+  setCurrentFile({ commit }, fileName) {
+    commit("SET_CURRENT_FILE", fileName);
+  },
 };
 
 const getters = {
   songTitles: (state) => {
     const songTitles = Object.keys(state.songs);
-    const sortedSongTitles = songTitles.sort((a, b) => a.localeCompare(b));
+    const sortedSongTitles = sortSongTitles(songTitles);
 
     return sortedSongTitles;
   },

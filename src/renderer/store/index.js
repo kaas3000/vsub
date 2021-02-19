@@ -31,11 +31,13 @@ const ElectronStorage = {
 // Migrate from vuex-electron to electron-store
 (function migrateToElectronStore() {
   const oldStore = new ElectronStore({ name: "vuex" });
-  if (oldStore.has("state")) {
-    ElectronStorage.store.set("vuex.Settings", oldStore.get("state").Settings);
+  if (!ElectronStorage.store.has("meta.version") && oldStore.has("state")) {
+    ElectronStorage.setItem("vuex.Settings", oldStore.get("state").Settings);
+    ElectronStorage.setItem("meta.version", 1);
   }
 })();
 
+// eslint-disable-next-line no-unused-vars
 const vuexLocal = new VuexPersistence({
   storage: ElectronStorage,
   reducer: (state) => ({
