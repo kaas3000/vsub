@@ -7,15 +7,15 @@ const { dialog } = remote;
 export default {
   computed: {
     currentFile() {
-      if (this.$store.state.Songs.currentFile === null) {
-        return null;
-      }
-
-      return path.basename(this.$store.state.Songs.currentFile);
+      return this.$store.state.SaveFiles.currentFile;
     },
 
     hasUnsavedChanges() {
       return this.$store.state.Songs.hasChangedSinceLastSave;
+    },
+
+    recentFiles() {
+      return this.$store.state.SaveFiles.recentFiles;
     },
   },
 
@@ -56,10 +56,11 @@ export default {
       const data = fs.readFileSync(location, { encoding: "utf8" });
       this.$store.dispatch("loadSongs", JSON.parse(data));
       this.$store.dispatch("setCurrentFile", location);
+      this.$router.push("/present");
     },
 
     save() {
-      let location = this.$store.state.Songs.currentFile;
+      let location = this.$store.state.SaveFiles.currentFile;
 
       if (location === null) {
         location =
@@ -73,6 +74,24 @@ export default {
       }
 
       this.exportSongs(location);
+    },
+  },
+
+  filters: {
+    /**
+     * @param {String} fullFileName
+     * @returns {String}
+     */
+    baseName(fullFileName) {
+      return path.basename(fullFileName);
+    },
+
+    /**
+     * @param {String} fullFileName
+     * @returns {String}
+     */
+    dirName(fullFileName) {
+      return path.dirname(fullFileName);
     },
   },
 };

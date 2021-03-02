@@ -90,6 +90,11 @@ export default {
 
       this.handleSubtitleSelected(above, below, n);
     },
+
+    firstSubtitle() {
+      const { above, below } = this.subtitles[0];
+      this.handleSubtitleSelected(above, below, 0);
+    },
   },
 
   computed: {

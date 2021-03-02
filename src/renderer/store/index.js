@@ -42,6 +42,7 @@ const vuexLocal = new VuexPersistence({
   storage: ElectronStorage,
   reducer: (state) => ({
     Settings: state.Settings,
+    SaveFiles: { ...state.SaveFiles, currentFile: null },
   }),
 });
 

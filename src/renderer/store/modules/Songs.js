@@ -14,7 +14,6 @@ const state = {
   songs: {},
 
   hasChangedSinceLastSave: false,
-  currentFile: null,
 };
 
 const mutations = {
@@ -73,10 +72,6 @@ const mutations = {
   SET_CHANGED_SINCE_LAST_SAVE(state, hasChanged) {
     state.hasChangedSinceLastSave = hasChanged;
   },
-
-  SET_CURRENT_FILE(state, fileName) {
-    Vue.set(state, "currentFile", fileName);
-  },
 };
 
 const actions = {
@@ -112,8 +107,9 @@ const actions = {
     commit("SET_CHANGED_SINCE_LAST_SAVE", hasChanged);
   },
 
-  setCurrentFile({ commit }, fileName) {
-    commit("SET_CURRENT_FILE", fileName);
+  clearSession({ commit }) {
+    commit("CLEAR_ALL_SONGS");
+    commit("SET_CURRENT_FILE", null); // defined in SaveFiles store
   },
 };
 

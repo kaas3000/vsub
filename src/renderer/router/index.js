@@ -12,6 +12,11 @@ export default new Router({
       children: [
         {
           path: "",
+          name: "Startup welcome screen",
+          component: require("@/components/welcome/WelcomeScreen").default,
+        },
+        {
+          path: "present",
           name: "Present subtitles",
           component: require("@/components/PresentSubtitles").default,
         },

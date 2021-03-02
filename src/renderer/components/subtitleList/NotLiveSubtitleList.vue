@@ -2,6 +2,7 @@
   <v-list class="h-100">
     <span v-shortkey="['arrowup']" @shortkey="previousSubtitle()"></span>
     <span v-shortkey="['arrowdown']" @shortkey="nextSubtitle()"></span>
+    <span v-shortkey="['home']" @shortkey="firstSubtitle()"></span>
 
     <v-subheader>Ondertitels</v-subheader>
     <v-divider></v-divider>

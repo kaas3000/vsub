@@ -1,11 +1,10 @@
 <template>
   <v-row align="start" justify="center" class="h-100">
     <v-navigation-drawer permanent :width="350" app clipped>
-      <span v-shortkey="['pageup']" @shortkey="previousSong()"></span>
-      <span v-shortkey="['pagedown']" @shortkey="nextSong()"></span>
-      <span v-shortkey="['enter']" @shortkey="selectVisibleSongSubtitles()"></span>
+      <span v-if="isAllowedChangeSong" v-shortkey="['pageup']" @shortkey="previousSong()"></span>
+      <span v-if="isAllowedChangeSong" v-shortkey="['pagedown']" @shortkey="nextSong()"></span>
 
-      <v-list nav>
+      <v-list nav :disabled="!isAllowedChangeSong">
         <v-subheader>Liederen</v-subheader>
         <v-list-item-group mandatory v-model="visibleSong" color="primary">
           <v-list-item v-for="(song, i) in songs" :key="i" :value="song">
@@ -82,6 +81,10 @@ export default {
         return this.$store.state.Songs.visibleSong;
       },
       set(title) {
+        this.$store.dispatch("setActiveSubtitle", {
+          songTitle: title,
+          index: 0,
+        });
         return this.$store.dispatch("setVisibleSong", title);
       },
     },
@@ -92,6 +95,10 @@ export default {
 
     isEnabledFeatureLiveSubtitleView() {
       return this.$store.state.Settings[settingNames.FEATURE_LIVE_SUBTITLE_VIEW];
+    },
+
+    isAllowedChangeSong() {
+      return this.$vMixConnection.connected !== VmixConnectionState.LIVE;
     },
   },
   methods: {

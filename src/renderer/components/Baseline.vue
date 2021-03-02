@@ -5,16 +5,11 @@
 
       <v-spacer></v-spacer>
 
-      <v-tooltip bottom>
-        <template v-slot:activator="{ on, attrs }">
-          <v-badge offset-x="18" offset-y="18" :value="hasUnsavedChanges" overlap dot>
-            <v-btn icon @click="save" :disabled="isLive" v-bind="attrs" v-on="on"
-              ><v-icon>mdi-content-save</v-icon></v-btn
-            >
-          </v-badge>
-        </template>
-        <span>Er zijn niet opgeslagen wijzigingen</span>
-      </v-tooltip>
+      <v-badge offset-x="18" offset-y="18" :value="hasUnsavedChanges" overlap dot>
+        <v-btn icon @click="save" :disabled="isLive" v-shortkey="!isLive ? ['ctrl', 's'] : []" @shortkey="save">
+          <v-icon>mdi-content-save</v-icon>
+        </v-btn>
+      </v-badge>
       <v-btn icon @click="open" :disabled="isLive"><v-icon>mdi-folder-open</v-icon></v-btn>
       <v-btn icon to="/settings" :disabled="isLive"><v-icon>mdi-cog</v-icon></v-btn>
       <div class="mx-4"></div>
@@ -25,7 +20,7 @@
         ref="toggleLiveButton"
         :loading="isLiveTransitioning"
         :disabled="!(isReadyForLive || isLive)"
-        v-shortkey="['space']"
+        v-shortkey="isReadyForLive || isLive ? ['space'] : []"
         @shortkey="vmixConnectionState && (isLive ? disableLive() : enableLive())"
       >
         <v-icon>{{ isLive ? "mdi-stop" : "mdi-play" }}</v-icon>
@@ -43,7 +38,9 @@
         <v-badge dot inline :color="vmixConnectionColor"></v-badge>
       </span>
 
-      <span><v-icon small color="white">mdi-file-document</v-icon> {{ currentFile || "Nieuw bestand" }}</span>
+      <span v-if="currentFile">
+        <v-icon small color="white">mdi-file-document</v-icon> {{ currentFile | baseName }}
+      </span>
     </v-footer>
   </v-app>
 </template>
@@ -60,7 +57,7 @@ export default {
   mixins: [SaveSongMixin],
 
   data: () => ({
-    drawer: null,
+    saveHover: false,
 
     isLiveTransitioning: false,
 
@@ -105,6 +102,11 @@ export default {
 
     isLive() {
       return this.vmixConnectionState === VmixConnnectionState.LIVE;
+    },
+
+    shouldShowUnsavedChangesTooltip() {
+      // return false;
+      return this.hasUnsavedChanges && this.saveHover;
     },
   },
 
@@ -170,6 +172,14 @@ export default {
 
 .overflow-y {
   overflow-y: auto;
+  height: 100%;
+}
+
+.middle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   height: 100%;
 }
 
