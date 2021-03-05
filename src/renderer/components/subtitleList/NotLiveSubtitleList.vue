@@ -6,7 +6,7 @@
 
     <v-subheader>Ondertitels</v-subheader>
     <v-divider></v-divider>
-    <div class="overflow-y" ref="scrollContainer">
+    <div class="overflow-y subtitles-scroll-container" ref="scrollContainer">
       <template v-for="({ above, below }, i) in subtitles">
         <subtitle-list-item
           :above="above"
@@ -60,3 +60,9 @@ export default {
   },
 };
 </script>
+
+<style lang="scss" scoped>
+.subtitles-scroll-container {
+  padding-bottom: 2em;
+}
+</style>
