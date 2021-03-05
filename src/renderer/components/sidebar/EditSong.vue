@@ -1,11 +1,12 @@
 <template>
-  <v-dialog v-model="dialogModel" content-class="addSong">
+  <v-dialog v-model="dialogModel" content-class="addSong" scrollable>
     <v-card class="d-flex flex-column">
       <v-card-title>Ondertitels bewerken</v-card-title>
-      <v-container fluid class="h-100 d-flex flex-column">
+      <v-container fluid class="d-flex flex-column overflow-y">
         <v-text-field style="flex: 0;" v-model="songTitle" label="Titel"></v-text-field>
         <div style="position: relative; flex: 1;">
           <div class="subtitleWidthHint" :style="`width: ${subtitleWidthHint}px;`"></div>
+          <div class="subtitleLineIndicator" :style="`width: ${subtitleTextAreaHasFocus ? 100 : 0}%;`"></div>
           <v-textarea
             outlined
             auto-grow
@@ -14,29 +15,27 @@
             label="Tekstregels"
             type="number"
             v-model="songLines"
+            @focus="subtitleTextAreaHasFocus = true"
+            @blur="subtitleTextAreaHasFocus = false"
           >
           </v-textarea>
         </div>
-
-        <v-row>
-          <v-col>
-            <v-btn block @click="hide">Annuleren</v-btn>
-          </v-col>
-          <v-col>
-            <v-btn
-              block
-              color="primary"
-              @click="
-                () => {
-                  save();
-                  hide();
-                }
-              "
-              >Opslaan</v-btn
-            >
-          </v-col>
-        </v-row>
       </v-container>
+      <v-divider></v-divider>
+      <v-card-actions class="justify-end">
+        <v-btn text @click="hide">Annuleren</v-btn>
+        <v-btn
+          text
+          color="primary"
+          @click="
+            () => {
+              save();
+              hide();
+            }
+          "
+          >Opslaan</v-btn
+        >
+      </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
@@ -52,6 +51,8 @@ export default {
     return {
       songTitle: "",
       songLines: "",
+
+      subtitleTextAreaHasFocus: false,
     };
   },
 
@@ -159,10 +160,27 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.subtitleWidthHint {
+.subtitleWidthHint,
+.subtitleLineIndicator {
   position: absolute;
   height: calc(100% - 3em);
   top: 1em;
+}
+.subtitleWidthHint {
   border-right: 1px solid #ff0000;
+}
+
+$subtitleLineBackgroundColor: transparent;
+$subtitleLineDividerColor: #dedede;
+$subtitleLineHeight: 3.5em;
+.subtitleLineIndicator {
+  margin-top: 10px;
+  background: repeating-linear-gradient(
+    to bottom,
+    #{$subtitleLineBackgroundColor},
+    #{$subtitleLineBackgroundColor} calc(#{$subtitleLineHeight} - 1px),
+    #{$subtitleLineDividerColor} calc(#{$subtitleLineHeight} - 1px),
+    #{$subtitleLineDividerColor} calc(#{$subtitleLineHeight})
+  );
 }
 </style>
