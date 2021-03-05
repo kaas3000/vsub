@@ -1,5 +1,5 @@
 <template>
-  <v-container class="overflow-y">
+  <v-container>
     <v-row>
       <v-col>
         <v-text-field

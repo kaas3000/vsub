@@ -1,5 +1,5 @@
 <template>
-  <v-container class="middle">
+  <v-container class="middle overflow-y">
     <v-card outlined width="100%" max-width="1100" min-height="400">
       <v-card-title class="headline">Welkom</v-card-title>
       <v-card-text>

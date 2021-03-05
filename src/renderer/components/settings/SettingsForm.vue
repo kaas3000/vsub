@@ -1,6 +1,6 @@
 <template>
-  <v-container>
-    <v-card class="overflow-y" height="100%">
+  <v-container class="d-flex">
+    <v-card class="settings-card">
       <v-card-title>
         Settings
       </v-card-title>
@@ -22,12 +22,12 @@
           </v-tab-item>
         </v-tabs>
       </v-card-text>
-      <v-card-actions>
-        <v-spacer></v-spacer>
-        <v-btn color="secondary lighten-2" text to="/">Annuleren</v-btn>
+      <v-divider></v-divider>
+      <v-card-actions class="justify-end">
+        <v-btn text @click="$router.back()">Annuleren</v-btn>
         <v-btn
+          text
           color="primary"
-          depressed
           @click="
             storeNewSettings();
             $router.back();
@@ -64,4 +64,14 @@ export default {
 };
 </script>
 
-<style></style>
+<style lang="scss" scoped>
+.settings-card {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+
+  > .v-card__text {
+    overflow-y: auto;
+  }
+}
+</style>
