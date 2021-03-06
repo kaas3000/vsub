@@ -31,10 +31,15 @@ export default {
     },
 
     setActiveSubtitle(i) {
-      this.$store.dispatch("setActiveSubtitle", {
-        songTitle: this.$store.getters.songData.title,
-        index: i,
-      });
+      const songTitle = this.$store.getters.songData.title;
+      if (songTitle) {
+        this.$store.dispatch("setActiveSubtitle", {
+          songTitle,
+          index: i,
+        });
+      } else {
+        this.$store.dispatch("setActiveSubtitle", null);
+      }
     },
 
     sendActiveSubtitleToVMix() {

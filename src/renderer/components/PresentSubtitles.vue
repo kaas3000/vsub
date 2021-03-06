@@ -44,24 +44,20 @@
     </v-navigation-drawer>
 
     <v-col class="h-100">
-      <live-subtitle-list v-if="isLive && isEnabledFeatureLiveSubtitleView"></live-subtitle-list>
-      <not-live-subtitle-list v-else></not-live-subtitle-list>
+      <subtitle-list></subtitle-list>
     </v-col>
   </v-row>
 </template>
 
 <script>
 import EditSong from "./sidebar/EditSong";
-import LiveSubtitleList from "./subtitleList/LiveSubtitleList";
-import NotLiveSubtitleList from "./subtitleList/NotLiveSubtitleList";
+import SubtitleList from "./subtitleList/SubtitleList";
 import VmixConnectionState from "../vmixConnection/VmixConnectionState";
-import { settingNames } from "../store/modules/Settings";
 
 export default {
   components: {
     EditSong,
-    LiveSubtitleList,
-    NotLiveSubtitleList,
+    SubtitleList,
   },
   data: () => ({
     editSongCurrentlyEditingTitle: null,
@@ -81,20 +77,21 @@ export default {
         return this.$store.state.Songs.visibleSong;
       },
       set(title) {
-        this.$store.dispatch("setActiveSubtitle", {
-          songTitle: title,
-          index: 0,
-        });
+        this.$store.dispatch(
+          "setActiveSubtitle",
+          title
+            ? {
+                songTitle: title,
+                index: 0,
+              }
+            : null
+        );
         return this.$store.dispatch("setVisibleSong", title);
       },
     },
 
     isLive() {
       return this.$vMixConnection.connected === VmixConnectionState.LIVE;
-    },
-
-    isEnabledFeatureLiveSubtitleView() {
-      return this.$store.state.Settings[settingNames.FEATURE_LIVE_SUBTITLE_VIEW];
     },
 
     isAllowedChangeSong() {

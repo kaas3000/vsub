@@ -9,9 +9,6 @@ const settingNames = {
 
   SUBTITLE_EDITOR_WIDTH_HINT: "subtitleEditorWidthHint",
   SUBTITLE_EDITOR_FONT_FAMILY: "subtitleEditorFontFamily",
-
-  FEATURE_LIVE_SUBTITLE_VIEW: "featureLiveSubtitleView",
-  FEATURE_KEEP_ACTIVE_SUBTITLE_VISIBLE: "featureKeepActiveSubtitleVisible",
 };
 
 const state = {
@@ -23,9 +20,6 @@ const state = {
 
   [settingNames.SUBTITLE_EDITOR_WIDTH_HINT]: 300,
   [settingNames.SUBTITLE_EDITOR_FONT_FAMILY]: "Roboto",
-
-  [settingNames.FEATURE_LIVE_SUBTITLE_VIEW]: false,
-  [settingNames.FEATURE_KEEP_ACTIVE_SUBTITLE_VISIBLE]: false,
 };
 
 const mutations = {

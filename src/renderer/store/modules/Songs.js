@@ -17,8 +17,13 @@ const state = {
 };
 
 const mutations = {
-  SET_ACTIVE_SUBTITLE(state, { songTitle, index }) {
-    state.activeSubtitle = { songTitle, index };
+  SET_ACTIVE_SUBTITLE(state, subtitle) {
+    if (subtitle !== null) {
+      const { songTitle, index } = subtitle;
+      state.activeSubtitle = { songTitle, index };
+    } else {
+      state.activeSubtitle = null;
+    }
   },
 
   ADD_SONG(state, { title, subtitles = [] }) {
@@ -99,8 +104,8 @@ const actions = {
     commit("SET_VISIBLE_SONG", title);
   },
 
-  setActiveSubtitle({ commit }, { songTitle, index }) {
-    commit("SET_ACTIVE_SUBTITLE", { songTitle, index });
+  setActiveSubtitle({ commit }, subtitle) {
+    commit("SET_ACTIVE_SUBTITLE", subtitle);
   },
 
   setChangedSinceLastSave({ commit }, hasChanged) {

@@ -15,11 +15,6 @@
           <v-tab-item>
             <subtitle-editor-settings></subtitle-editor-settings>
           </v-tab-item>
-
-          <v-tab>Experimentele features</v-tab>
-          <v-tab-item>
-            <experimental-features-settings></experimental-features-settings>
-          </v-tab-item>
         </v-tabs>
       </v-card-text>
       <v-divider></v-divider>
@@ -43,13 +38,11 @@
 import eventHub from "../../EventHub";
 import VMixSettings from "./VMixSettings";
 import SubtitleEditorSettings from "./SubtitleEditorSettings";
-import ExperimentalFeaturesSettings from "./ExperimentalFeaturesSettings";
 
 export default {
   components: {
     "vmix-settings": VMixSettings,
     SubtitleEditorSettings,
-    ExperimentalFeaturesSettings,
   },
   data() {
     return {};

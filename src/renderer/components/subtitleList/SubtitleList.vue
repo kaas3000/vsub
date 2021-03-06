@@ -24,13 +24,10 @@
 <script>
 import SubtitleMixin from "./SubtitleMixin";
 import SubtitleListItem from "./SubtitleListItem";
-import SubtitleCard from "./SubtitleCard.vue";
-import { settingNames } from "../../store/modules/Settings";
 
 export default {
   components: {
     SubtitleListItem,
-    SubtitleCard,
   },
 
   methods: {
@@ -45,16 +42,10 @@ export default {
     },
   },
 
-  computed: {
-    isEnabledFeatureKeepActiveSubtitleVisible() {
-      return this.$store.state.Settings[settingNames.FEATURE_KEEP_ACTIVE_SUBTITLE_VISIBLE];
-    },
-  },
-
   mixins: [SubtitleMixin],
 
   updated() {
-    if (this.isEnabledFeatureKeepActiveSubtitleVisible && (this.subtitles ?? null) !== null) {
+    if ((this.subtitles ?? null) !== null) {
       this.scrollToActiveElement();
     }
   },
