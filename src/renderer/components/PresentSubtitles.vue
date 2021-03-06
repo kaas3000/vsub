@@ -129,6 +129,13 @@ export default {
       this.visibleSong = songs[newIndex];
     },
   },
+
+  mounted() {
+    if (this.songs.length === 0) {
+      this.isEditingSongList = true;
+      this.isAddingSong = true;
+    }
+  },
 };
 </script>
 
