@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, dialog } from "electron";
 
 import Store from "electron-store";
 
@@ -11,6 +11,7 @@ if (process.env.NODE_ENV !== "development") {
 }
 
 Store.initRenderer();
+app.showExitPrompt = false;
 
 let mainWindow;
 const winURL = process.env.NODE_ENV === "development" ? "http://localhost:9080" : `file://${__dirname}/index.html`;
@@ -55,6 +56,25 @@ function createWindow() {
 
   mainWindow.on("resize", () => storeWindowParameters());
   mainWindow.on("moved", () => storeWindowParameters());
+
+  mainWindow.on("close", (e) => {
+    if (app.showExitPrompt) {
+      e.preventDefault(); // Prevents the window from closing
+      const response = dialog.showMessageBoxSync({
+        type: "question",
+        buttons: ["Afsluiten", "Terug"],
+        title: "Onopgeslagen wijzigingen",
+        message: "Nog niet alle wijzigingen zijn opgeslagen. Weet je zeker dat je wilt afsluiten?",
+        defaultId: 1,
+        cancelId: 1,
+      });
+      const closeIsUnintended = response === 0;
+      if (closeIsUnintended) {
+        app.showExitPrompt = false;
+        mainWindow.close();
+      }
+    }
+  });
 }
 
 app.on("ready", () => {

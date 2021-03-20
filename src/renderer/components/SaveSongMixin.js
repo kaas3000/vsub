@@ -2,7 +2,7 @@ import { remote } from "electron";
 import fs from "fs";
 import path from "path";
 
-const { dialog } = remote;
+const { dialog, app } = remote;
 
 export default {
   computed: {
@@ -16,6 +16,12 @@ export default {
 
     recentFiles() {
       return this.$store.state.SaveFiles.recentFiles;
+    },
+  },
+
+  watch: {
+    hasUnsavedChanges: function setOnCloseBehaviour(hasUnsavedChanges) {
+      app.showExitPrompt = hasUnsavedChanges;
     },
   },
 
