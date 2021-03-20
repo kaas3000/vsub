@@ -1,13 +1,17 @@
 <template>
   <v-app id="inspire">
-    <v-app-bar app :color="accentColor" dark>
+    <v-app-bar app :color="accentColor" dark clipped-left collapse-on-scroll>
       <v-toolbar-title>GKV Lied Ondertiteling</v-toolbar-title>
 
       <v-spacer></v-spacer>
 
-      <v-btn icon @click="save"><v-icon>mdi-content-save</v-icon></v-btn>
-      <v-btn icon @click="open"><v-icon>mdi-folder-open</v-icon></v-btn>
-      <v-btn icon to="/settings"><v-icon>mdi-cog</v-icon></v-btn>
+      <v-badge offset-x="18" offset-y="18" :value="hasUnsavedChanges" overlap dot>
+        <v-btn icon @click="save" :disabled="isLive" v-shortkey="!isLive ? ['ctrl', 's'] : []" @shortkey="save">
+          <v-icon>mdi-content-save</v-icon>
+        </v-btn>
+      </v-badge>
+      <v-btn icon @click="open" :disabled="isLive"><v-icon>mdi-folder-open</v-icon></v-btn>
+      <v-btn icon to="/settings" :disabled="isLive"><v-icon>mdi-cog</v-icon></v-btn>
       <div class="mx-4"></div>
 
       <v-btn
@@ -15,43 +19,46 @@
         @click="isLive ? disableLive() : enableLive()"
         ref="toggleLiveButton"
         :loading="isLiveTransitioning"
-        :disabled="!isVmixConnected"
-        v-shortkey="['space']"
-        @shortkey="isVmixConnected && (isLive ? disableLive() : enableLive())"
+        :disabled="!(isReadyForLive || isLive)"
+        v-shortkey="isReadyForLive || isLive ? ['space'] : []"
+        @shortkey="vmixConnectionState && (isLive ? disableLive() : enableLive())"
       >
         <v-icon>{{ isLive ? "mdi-stop" : "mdi-play" }}</v-icon>
       </v-btn>
     </v-app-bar>
 
-    <v-content>
-      <v-container class="fill-height" fluid>
+    <v-main class="max-size-screen">
+      <v-container fluid class="h-100 pb-0">
         <router-view></router-view>
       </v-container>
-    </v-content>
-    <v-footer :color="`${accentColor} white--text`" app>
+    </v-main>
+    <v-footer color="primary white--text" app>
       <span>
         VMix connection:
         <v-badge dot inline :color="vmixConnectionColor"></v-badge>
+      </span>
+
+      <span v-if="currentFile">
+        <v-icon small color="white">mdi-file-document</v-icon> {{ currentFile | baseName }}
       </span>
     </v-footer>
   </v-app>
 </template>
 
 <script>
-// eslint-disable-next-line no-unused-vars
-import { ConnectionTCP, ConnectionHTTP } from "node-vmix";
-const ip = require("ip");
+import VmixConnnectionState from "@/vmixConnection/VmixConnectionState";
+import SaveSongMixin from "./SaveSongMixin";
 
 export default {
   props: {
     source: String,
   },
 
-  data: () => ({
-    drawer: null,
-    ip: ip.address(),
+  mixins: [SaveSongMixin],
 
-    isLive: false,
+  data: () => ({
+    saveHover: false,
+
     isLiveTransitioning: false,
 
     // The tally uses the index instead of the name of the input
@@ -63,38 +70,63 @@ export default {
 
   computed: {
     accentColor() {
-      if (!this.isVmixConnected || !this.isVmixTitleAvailable)
-        return "secondary";
-      if (this.isLive) return "orange";
-      return "primary";
+      if (!this.vmixConnectionState === VmixConnnectionState.READY) return "secondary";
+
+      if (this.isLive) return "red";
+
+      return "green";
     },
-    isVmixConnected() {
+
+    vmixConnectionState() {
       return this.$vMixConnection.connected;
     },
 
     vmixConnectionColor() {
-      if (this.isVmixConnected && this.isVmixTitleAvailable) {
+      if (
+        this.vmixConnectionState === VmixConnnectionState.READY ||
+        this.vmixConnectionState === VmixConnnectionState.LIVE
+      ) {
         return "green";
       }
 
-      if (this.isVmixConnected && !this.isVmixTitleAvailable) {
+      if (this.vmixConnectionState === VmixConnnectionState.CONNECTED) {
         return "orange";
       }
 
       return "red";
     },
+
+    isReadyForLive() {
+      return this.vmixConnectionState === VmixConnnectionState.READY;
+    },
+
+    isLive() {
+      return this.vmixConnectionState === VmixConnnectionState.LIVE;
+    },
+
+    shouldShowUnsavedChangesTooltip() {
+      // return false;
+      return this.hasUnsavedChanges && this.saveHover;
+    },
+  },
+
+  watch: {
+    isLive: function isLiveWatcher() {
+      this.isLiveTransitioning = false;
+    },
+
+    "$store.state.Settings.vmixHost": function reconnect() {
+      this.connectToVMix();
+    },
+    "$store.state.Settings.vmixInputName": function reconnect() {
+      this.connectToVMix();
+    },
+    "$store.state.Settings.vmixOverlay": function reconnect() {
+      this.connectToVMix();
+    },
   },
 
   methods: {
-    setLiveFromTally(tallyData) {
-      if (this.vmixInputIndex === null) {
-        return;
-      }
-
-      this.isLiveTransitioning = false;
-      this.isLive = tallyData.program.includes(this.vmixInputIndex);
-    },
-
     enableLive() {
       this.isLiveTransitioning = true;
       this.execVmixCommands({
@@ -111,91 +143,20 @@ export default {
       });
     },
 
-    setSubtitleInputIndexFromState(xml) {
-      const xmlDocument = new DOMParser().parseFromString(xml, "text/xml");
-
-      // Query the input number from the xml document using xpath
-      const xpathResult = xmlDocument.evaluate(
-        `/vmix/inputs//input[@title="${this.$store.state.Settings.vmixInputName}"]/@number`,
-        xmlDocument,
-        document.createNSResolver(xmlDocument.documentElement),
-        XPathResult.NUMBER_TYPE,
-        null
+    connectToVMix() {
+      this.setVmixConnection(
+        this.$store.state.Settings.vmixHost,
+        this.$store.state.Settings.vmixInputName,
+        this.$store.state.Settings.vmixOverlay,
+        {
+          autoReconnect: false,
+        }
       );
-
-      if (xpathResult.numberValue) {
-        this.vmixInputIndex = xpathResult.numberValue;
-      }
-
-      // With a new id, the tally state has to be updated too
-      this.execVmixCommands("TALLY");
-    },
-
-    open() {
-      const fs = require("fs");
-      const { dialog } = require("electron").remote;
-
-      const [location] = dialog.showOpenDialog({
-        properties: ["openFile"],
-        filters: [{ name: "Liturgie (*.json)", extensions: ["json"] }],
-      });
-
-      const data = fs.readFileSync(location, { encoding: "utf8" });
-
-      this.$store.dispatch("loadSongs", JSON.parse(data));
-    },
-    save() {
-      const fs = require("fs");
-      const { dialog } = require("electron").remote;
-
-      const location = dialog.showSaveDialog({
-        filters: [{ name: "Liturgie (*.json)", extensions: ["json"] }],
-      });
-      const data = JSON.stringify(this.$store.state.Songs.songs);
-      fs.writeFileSync(location, data, { encoding: "utf8" });
-    },
-
-    handleVmixConnectionChange(newVal) {
-      if (newVal === false) {
-        this.vmixConnectionInterval = setInterval(() => {
-          this.setVmixConnection(this.$store.state.Settings.vmixHost, {
-            autoReconnect: false,
-          });
-        }, 1000);
-      } else {
-        clearInterval(this.vmixConnectionInterval);
-      }
     },
   },
 
   mounted() {
-    this.setVmixConnection(this.$store.state.Settings.vmixHost, {
-      autoReconnect: false,
-    });
-
-    this.$vMixConnection.watchXpath(
-      `/vmix/inputs//input[@title="${this.$store.state.Settings.vmixInputName}"]/@number`,
-      (inputIndex) => {
-        const index = parseInt(inputIndex, 10);
-        if (Number.isNaN(index)) {
-          this.isVmixTitleAvailable = false;
-        } else {
-          this.isVmixTitleAvailable = true;
-          this.vmixInputIndex = parseInt(inputIndex, 10);
-        }
-      }
-    );
-
-    this.$vMixConnection.watchXpath(
-      `/vmix/overlays/overlay[@number=${this.$store.state.Settings.vmixOverlay}]`,
-      (activeInput) => {
-        const newIsLive = this.vmixInputIndex === parseInt(activeInput, 10);
-        if (this.isLive !== newIsLive) {
-          this.isLiveTransitioning = false;
-        }
-        this.isLive = this.vmixInputIndex === parseInt(activeInput, 10);
-      }
-    );
+    this.connectToVMix();
   },
 };
 </script>
@@ -205,18 +166,35 @@ export default {
   max-height: 100vh;
 }
 
+.max-size-screen {
+  max-height: 100vh;
+}
+
 .overflow-y {
   overflow-y: auto;
   height: 100%;
 }
 
-.v-card {
-  &.active::before {
-    opacity: 0.08;
-  }
+.middle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
-.v-content {
-  height: 100%;
+.row,
+.container {
+  max-height: 100%;
+}
+
+.v-footer {
+  justify-content: space-between;
+  font-size: 0.875em;
+}
+
+header,
+footer {
+  user-select: none;
 }
 </style>

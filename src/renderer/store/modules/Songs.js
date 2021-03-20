@@ -1,24 +1,28 @@
 import Vue from "vue";
 
-const state = {
-  vmixAddress: null,
-  active: null,
+/**
+ * @param {String[]} titles
+ * @returns {String[]}
+ */
+function sortSongTitles(titles) {
+  return titles.sort((a, b) => a.localeCompare(b));
+}
 
+const state = {
   visibleSong: "Psalm 1",
+  activeSubtitle: null,
   songs: {},
+
+  hasChangedSinceLastSave: false,
 };
 
 const mutations = {
-  SET_ACTIVE(state, { songTitle, regelIndex }) {
-    state.songs[state.active.songTitle].regels[state.active.regelIndex] = false;
-
-    state.songs[songTitle].regels[regelIndex].active = true;
-
-    if (state.active) {
-      state.active = {
-        songTitle,
-        regelIndex,
-      };
+  SET_ACTIVE_SUBTITLE(state, subtitle) {
+    if (subtitle !== null) {
+      const { songTitle, index } = subtitle;
+      state.activeSubtitle = { songTitle, index };
+    } else {
+      state.activeSubtitle = null;
     }
   },
 
@@ -27,6 +31,8 @@ const mutations = {
       title,
       subtitles,
     });
+
+    state.hasChangedSinceLastSave = true;
   },
 
   UPDATE_SONG(state, { oldTitle, title, subtitles }) {
@@ -40,10 +46,13 @@ const mutations = {
     });
 
     Vue.set(state, "visibleSong", title);
+    state.hasChangedSinceLastSave = true;
   },
 
   REMOVE_SONG(state, title) {
     Vue.delete(state.songs, title);
+
+    state.hasChangedSinceLastSave = true;
   },
 
   CLEAR_ALL_SONGS(state) {
@@ -52,29 +61,26 @@ const mutations = {
 
   LOAD_SONGS(state, songs) {
     Vue.set(state, "songs", songs);
+    const firstSongTitle = sortSongTitles(Object.keys(songs))[0];
+    Vue.set(state, "activeSubtitle", {
+      songTitle: firstSongTitle,
+      index: 0,
+    });
+
+    Vue.set(state, "hasChangedSinceLastSave", false);
   },
 
   SET_VISIBLE_SONG(state, title) {
     Vue.set(state, "visibleSong", title);
   },
 
-  SELECT_SUBTITLE(state, i) {
-    Object.values(state.songs).forEach((song) => {
-      song.regels.forEach((regel) => {
-        if (regel.active) {
-          Vue.set(regel, "active", false);
-        }
-      });
-    });
-
-    const visibleSong = state.songs[state.visibleSong];
-    Vue.set(visibleSong.regels[i], "active", true);
+  SET_CHANGED_SINCE_LAST_SAVE(state, hasChanged) {
+    state.hasChangedSinceLastSave = hasChanged;
   },
 };
 
 const actions = {
   addSong(store, args) {
-    // do something async
     store.commit("ADD_SONG", args);
   },
 
@@ -98,31 +104,43 @@ const actions = {
     commit("SET_VISIBLE_SONG", title);
   },
 
-  selectSubtitle({ commit }, i) {
-    commit("SELECT_SUBTITLE", i);
+  setActiveSubtitle({ commit }, subtitle) {
+    commit("SET_ACTIVE_SUBTITLE", subtitle);
+  },
+
+  setChangedSinceLastSave({ commit }, hasChanged) {
+    commit("SET_CHANGED_SINCE_LAST_SAVE", hasChanged);
+  },
+
+  clearSession({ commit }) {
+    commit("CLEAR_ALL_SONGS");
+    commit("SET_CURRENT_FILE", null); // defined in SaveFiles store
   },
 };
 
 const getters = {
-  songTitles: (state) => Object.keys(state.songs),
+  songTitles: (state) => {
+    const songTitles = Object.keys(state.songs);
+    const sortedSongTitles = sortSongTitles(songTitles);
 
-  songData: (state) => state.songs[state.visibleSong],
-
-  selectedSong: (state) => {
-    return Object.values(state.songs).find((song) => {
-      return song.regels.find((regel) => regel.active === true);
-    });
+    return sortedSongTitles;
   },
 
-  songJson: (state, getters) => {
-    const { selectedSong } = getters;
-    if (selectedSong) {
-      return selectedSong.regels.map(({ boven, onder }) => ({
-        boven,
-        onder,
-      }));
+  songData: (state) => {
+    const emptySubtitle = {
+      above: "",
+      below: "",
+    };
+
+    if (!Object.prototype.hasOwnProperty.call(state.songs, state.visibleSong)) {
+      return null;
     }
-    return [];
+
+    const visibleSongData = { ...state.songs[state.visibleSong] };
+
+    visibleSongData.subtitles = [emptySubtitle, ...visibleSongData.subtitles, emptySubtitle];
+
+    return visibleSongData;
   },
 };
 
